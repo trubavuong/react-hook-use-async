@@ -1,6 +1,6 @@
 {
-  "name": "react-hook-use-promise",
-  "version": "0.0.0",
+  "name": "react-hook-use-promises",
+  "version": "0.0.1",
   "description": "",
   "main": "lib/index.js",
   "scripts": {
@@ -34,7 +34,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/we-code-now/react-hook-use-promise.git"
+    "url": "git+https://github.com/we-code-now/react-hook-use-promises.git"
   },
   "keywords": [
     "react",
@@ -47,9 +47,9 @@
   "author": "Steven <steven@wecodenow.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/we-code-now/react-hook-use-promise/issues"
+    "url": "https://github.com/we-code-now/react-hook-use-promises/issues"
   },
-  "homepage": "https://github.com/we-code-now/react-hook-use-promise#readme",
+  "homepage": "https://github.com/we-code-now/react-hook-use-promises#readme",
   "devDependencies": {
     "@babel/cli": "^7.5.5",
     "@babel/core": "^7.5.5",
