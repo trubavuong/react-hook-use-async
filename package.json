@@ -20,7 +20,7 @@
     }
   },
   "lint-staged": {
-    "*.js": [
+    "!(.eslintrc).js": [
       "eslint --max-warnings=0"
     ],
     "*.md": [
