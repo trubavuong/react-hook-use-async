@@ -21,7 +21,15 @@ module.exports = {
   rules: {
     'arrow-parens': ['error', 'as-needed'],
     'brace-style': ['error', 'stroustrup'],
-    'object-curly-newline': ['error', { multiline: true, minProperties: 3 }],
+    'object-curly-newline': ['error', { multiline: true, minProperties: 4 }],
+    'import/no-extraneous-dependencies': [
+      'error',
+      {
+        devDependencies: false,
+        peerDependencies: true,
+        optionalDependencies: false,
+      },
+    ],
     'react/prop-types': ['off'],
     'react-hooks/rules-of-hooks': 'error',
     'react-hooks/exhaustive-deps': 'warn',
