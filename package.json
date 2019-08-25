@@ -1,10 +1,10 @@
 {
   "name": "react-hook-use-async",
   "version": "0.0.2",
-  "description": "",
+  "description": "Playing with async task in React",
   "main": "lib/index.js",
   "scripts": {
-    "build": "npm run clean && babel src --out-dir lib --ignore \"src/**/*.spec.js\",\"src/**/*.test.js\"",
+    "build": "npm run clean && babel src --out-dir lib --ignore \"**/*.spec.js\",\"**/*.test.js\"",
     "clean": "rimraf lib coverage",
     "cover": "npm run test -- --coverage",
     "cover:codacy": "npm run cover && cat ./coverage/lcov.info | codacy-coverage",
@@ -41,8 +41,11 @@
     "hook",
     "hooks",
     "async",
+    "useAsync",
     "promise",
-    "promises"
+    "usePromise",
+    "promises",
+    "usePromises"
   ],
   "author": "Steven <steven@wecodenow.com>",
   "license": "MIT",

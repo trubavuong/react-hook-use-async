@@ -25,9 +25,9 @@ module.exports = {
     'import/no-extraneous-dependencies': [
       'error',
       {
-        devDependencies: false,
         peerDependencies: true,
         optionalDependencies: false,
+        devDependencies: ['**/*.spec.js', '**/*.test.js'],
       },
     ],
     'react/prop-types': ['off'],
