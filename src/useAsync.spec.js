@@ -23,7 +23,7 @@ function UsersInternal({
   returnAsPromise,
 }) {
   const {
-    data,
+    result,
     error,
     isPending,
     cancel,
@@ -61,7 +61,7 @@ function UsersInternal({
   return (
     <div>
       <ul className="users">
-        {data && data.map(({ id }) => (
+        {result && result.map(({ id }) => (
           <li className="user" key={id}>{id}</li>
         ))}
       </ul>
@@ -104,13 +104,13 @@ describe('useAsync.js', () => {
 
   afterEach(cleanup);
 
-  async function testRenderUsers(container, { data, error, isPending }) {
+  async function testRenderUsers(container, { result, error, isPending }) {
     await waitForElement(() => container.getElementsByClassName('user'));
 
     const users = container.querySelectorAll('.user');
-    expect(users).toHaveLength(data.length);
+    expect(users).toHaveLength(result.length);
     users.forEach((user, i) => {
-      expect(user.textContent).toEqual(data[i].toString());
+      expect(user.textContent).toEqual(result[i].toString());
     });
 
     expect(container.querySelector('.error').textContent).toEqual(error.message);
@@ -119,13 +119,13 @@ describe('useAsync.js', () => {
 
   async function testRenderUsersNoLoad(container) {
     jest.advanceTimersByTime(100);
-    await testRenderUsers(container, { data: [], error: NO_ERROR, isPending: false });
+    await testRenderUsers(container, { result: [], error: NO_ERROR, isPending: false });
 
     jest.advanceTimersByTime(1000);
-    await testRenderUsers(container, { data: [], error: NO_ERROR, isPending: false });
+    await testRenderUsers(container, { result: [], error: NO_ERROR, isPending: false });
 
     jest.advanceTimersByTime(5000);
-    await testRenderUsers(container, { data: [], error: NO_ERROR, isPending: false });
+    await testRenderUsers(container, { result: [], error: NO_ERROR, isPending: false });
   }
 
   async function testRenderUsersLoad(container, { from, to }) {
@@ -144,52 +144,52 @@ describe('useAsync.js', () => {
       it('should render with default inputs', async () => {
         const { container } = render(<Users />);
         await testRenderUsersLoad(container, {
-          from: { data: [], error: NO_ERROR },
-          to: { data: [], error: NO_ERROR },
+          from: { result: [], error: NO_ERROR },
+          to: { result: [], error: NO_ERROR },
         });
       });
 
       it('should render with lazy success', async () => {
         const { container } = render(<Users ids={[1, 2, 3]} />);
         await testRenderUsersLoad(container, {
-          from: { data: [], error: NO_ERROR },
-          to: { data: [1, 2, 3], error: NO_ERROR },
+          from: { result: [], error: NO_ERROR },
+          to: { result: [1, 2, 3], error: NO_ERROR },
         });
       });
 
       it('should render with lazy error', async () => {
         const { container } = render(<Users ids={[100, 99, 98]} />);
         await testRenderUsersLoad(container, {
-          from: { data: [], error: NO_ERROR },
-          to: { data: [], error: BIG_NUMBER_ERROR },
+          from: { result: [], error: NO_ERROR },
+          to: { result: [], error: BIG_NUMBER_ERROR },
         });
       });
 
       it('should render with lazy success then error', async () => {
         const { container, rerender } = render(<Users ids={[1, 2, 3]} />);
         await testRenderUsersLoad(container, {
-          from: { data: [], error: NO_ERROR },
-          to: { data: [1, 2, 3], error: NO_ERROR },
+          from: { result: [], error: NO_ERROR },
+          to: { result: [1, 2, 3], error: NO_ERROR },
         });
 
         rerender(<Users ids={[100, 99, 98]} />);
         await testRenderUsersLoad(container, {
-          from: { data: [1, 2, 3], error: NO_ERROR },
-          to: { data: [], error: BIG_NUMBER_ERROR },
+          from: { result: [1, 2, 3], error: NO_ERROR },
+          to: { result: [], error: BIG_NUMBER_ERROR },
         });
       });
 
       it('should render with lazy error then success', async () => {
         const { container, rerender } = render(<Users ids={[100, 99, 98]} />);
         await testRenderUsersLoad(container, {
-          from: { data: [], error: NO_ERROR },
-          to: { data: [], error: BIG_NUMBER_ERROR },
+          from: { result: [], error: NO_ERROR },
+          to: { result: [], error: BIG_NUMBER_ERROR },
         });
 
         rerender(<Users ids={[1, 2, 3]} />);
         await testRenderUsersLoad(container, {
-          from: { data: [], error: BIG_NUMBER_ERROR },
-          to: { data: [1, 2, 3], error: NO_ERROR },
+          from: { result: [], error: BIG_NUMBER_ERROR },
+          to: { result: [1, 2, 3], error: NO_ERROR },
         });
       });
 
@@ -201,18 +201,18 @@ describe('useAsync.js', () => {
         );
 
         jest.advanceTimersByTime(100);
-        await testRenderUsers(container, { data: [], error: NO_ERROR, isPending: true });
+        await testRenderUsers(container, { result: [], error: NO_ERROR, isPending: true });
         expect(onError).not.toHaveBeenCalled();
         expect(onSuccess).not.toHaveBeenCalled();
 
         jest.advanceTimersByTime(1000);
-        await testRenderUsers(container, { data: [1, 2, 3], error: NO_ERROR, isPending: false });
+        await testRenderUsers(container, { result: [1, 2, 3], error: NO_ERROR, isPending: false });
         expect(onError).not.toHaveBeenCalled();
         expect(onSuccess).toHaveBeenCalledTimes(1);
         expect(onSuccess).toHaveBeenCalledWith([{ id: 1 }, { id: 2 }, { id: 3 }], [1, 2, 3]);
 
         jest.advanceTimersByTime(5000);
-        await testRenderUsers(container, { data: [1, 2, 3], error: NO_ERROR, isPending: false });
+        await testRenderUsers(container, { result: [1, 2, 3], error: NO_ERROR, isPending: false });
         expect(onError).not.toHaveBeenCalled();
         expect(onSuccess).toHaveBeenCalledTimes(1);
         expect(onSuccess).toHaveBeenCalledWith([{ id: 1 }, { id: 2 }, { id: 3 }], [1, 2, 3]);
@@ -226,18 +226,18 @@ describe('useAsync.js', () => {
         );
 
         jest.advanceTimersByTime(100);
-        await testRenderUsers(container, { data: [], error: NO_ERROR, isPending: true });
+        await testRenderUsers(container, { result: [], error: NO_ERROR, isPending: true });
         expect(onError).not.toHaveBeenCalled();
         expect(onSuccess).not.toHaveBeenCalled();
 
         jest.advanceTimersByTime(1000);
-        await testRenderUsers(container, { data: [], error: BIG_NUMBER_ERROR, isPending: false });
+        await testRenderUsers(container, { result: [], error: BIG_NUMBER_ERROR, isPending: false });
         expect(onError).toHaveBeenCalledTimes(1);
         expect(onError).toHaveBeenCalledWith(BIG_NUMBER_ERROR, [100, 99, 98]);
         expect(onSuccess).not.toHaveBeenCalled();
 
         jest.advanceTimersByTime(5000);
-        await testRenderUsers(container, { data: [], error: BIG_NUMBER_ERROR, isPending: false });
+        await testRenderUsers(container, { result: [], error: BIG_NUMBER_ERROR, isPending: false });
         expect(onError).toHaveBeenCalledTimes(1);
         expect(onError).toHaveBeenCalledWith(BIG_NUMBER_ERROR, [100, 99, 98]);
         expect(onSuccess).not.toHaveBeenCalled();
@@ -247,62 +247,62 @@ describe('useAsync.js', () => {
         const { container } = render(<Users ids={[1, 2, 3]} />);
 
         jest.advanceTimersByTime(100);
-        await testRenderUsers(container, { data: [], error: NO_ERROR, isPending: true });
+        await testRenderUsers(container, { result: [], error: NO_ERROR, isPending: true });
 
         fireEvent.click(container.querySelector('button.cancel'));
 
         jest.advanceTimersByTime(1000);
-        await testRenderUsers(container, { data: [], error: ABORT_ERROR, isPending: false });
+        await testRenderUsers(container, { result: [], error: ABORT_ERROR, isPending: false });
 
         jest.advanceTimersByTime(5000);
-        await testRenderUsers(container, { data: [], error: ABORT_ERROR, isPending: false });
+        await testRenderUsers(container, { result: [], error: ABORT_ERROR, isPending: false });
       });
 
       it('should cancel render with lazy error', async () => {
         const { container } = render(<Users ids={[100, 99, 98]} />);
 
         jest.advanceTimersByTime(100);
-        await testRenderUsers(container, { data: [], error: NO_ERROR, isPending: true });
+        await testRenderUsers(container, { result: [], error: NO_ERROR, isPending: true });
 
         fireEvent.click(container.querySelector('button.cancel'));
 
         jest.advanceTimersByTime(1000);
-        await testRenderUsers(container, { data: [], error: ABORT_ERROR, isPending: false });
+        await testRenderUsers(container, { result: [], error: ABORT_ERROR, isPending: false });
 
         jest.advanceTimersByTime(5000);
-        await testRenderUsers(container, { data: [], error: ABORT_ERROR, isPending: false });
+        await testRenderUsers(container, { result: [], error: ABORT_ERROR, isPending: false });
       });
 
       it('should rerender with lazy success when re-execute', async () => {
         const { container } = render(<Users ids={[1, 2, 3]} />);
 
         jest.advanceTimersByTime(100);
-        await testRenderUsers(container, { data: [], error: NO_ERROR, isPending: true });
+        await testRenderUsers(container, { result: [], error: NO_ERROR, isPending: true });
 
         fireEvent.click(container.querySelector('button.cancel'));
         fireEvent.click(container.querySelector('button.execute'));
 
         jest.advanceTimersByTime(1000);
-        await testRenderUsers(container, { data: [1, 2, 3], error: NO_ERROR, isPending: false });
+        await testRenderUsers(container, { result: [1, 2, 3], error: NO_ERROR, isPending: false });
 
         jest.advanceTimersByTime(5000);
-        await testRenderUsers(container, { data: [1, 2, 3], error: NO_ERROR, isPending: false });
+        await testRenderUsers(container, { result: [1, 2, 3], error: NO_ERROR, isPending: false });
       });
 
       it('should rerender with lazy error when re-execute', async () => {
         const { container } = render(<Users ids={[100, 99, 98]} />);
 
         jest.advanceTimersByTime(100);
-        await testRenderUsers(container, { data: [], error: NO_ERROR, isPending: true });
+        await testRenderUsers(container, { result: [], error: NO_ERROR, isPending: true });
 
         fireEvent.click(container.querySelector('button.cancel'));
         fireEvent.click(container.querySelector('button.execute'));
 
         jest.advanceTimersByTime(1000);
-        await testRenderUsers(container, { data: [], error: BIG_NUMBER_ERROR, isPending: false });
+        await testRenderUsers(container, { result: [], error: BIG_NUMBER_ERROR, isPending: false });
 
         jest.advanceTimersByTime(5000);
-        await testRenderUsers(container, { data: [], error: BIG_NUMBER_ERROR, isPending: false });
+        await testRenderUsers(container, { result: [], error: BIG_NUMBER_ERROR, isPending: false });
       });
     });
 
@@ -311,45 +311,45 @@ describe('useAsync.js', () => {
         const { container } = render(<UsersNonPromise />);
 
         jest.advanceTimersByTime(0);
-        await testRenderUsers(container, { data: [], error: NO_ERROR, isPending: false });
+        await testRenderUsers(container, { result: [], error: NO_ERROR, isPending: false });
       });
 
       it('should render with success', async () => {
         const { container } = render(<UsersNonPromise ids={[1, 2, 3]} />);
 
         jest.advanceTimersByTime(0);
-        await testRenderUsers(container, { data: [1, 2, 3], error: NO_ERROR, isPending: false });
+        await testRenderUsers(container, { result: [1, 2, 3], error: NO_ERROR, isPending: false });
       });
 
       it('should render with error', async () => {
         const { container } = render(<UsersNonPromise ids={[100, 99, 98]} />);
 
         jest.advanceTimersByTime(0);
-        await testRenderUsers(container, { data: [], error: BIG_NUMBER_ERROR, isPending: false });
+        await testRenderUsers(container, { result: [], error: BIG_NUMBER_ERROR, isPending: false });
       });
 
       it('should render with success then error', async () => {
         const { container, rerender } = render(<UsersNonPromise ids={[1, 2, 3]} />);
 
         jest.advanceTimersByTime(0);
-        await testRenderUsers(container, { data: [1, 2, 3], error: NO_ERROR, isPending: false });
+        await testRenderUsers(container, { result: [1, 2, 3], error: NO_ERROR, isPending: false });
 
         rerender(<UsersNonPromise ids={[100, 99, 98]} />);
 
         jest.advanceTimersByTime(0);
-        await testRenderUsers(container, { data: [], error: BIG_NUMBER_ERROR, isPending: false });
+        await testRenderUsers(container, { result: [], error: BIG_NUMBER_ERROR, isPending: false });
       });
 
       it('should render with error then success', async () => {
         const { container, rerender } = render(<UsersNonPromise ids={[100, 99, 98]} />);
 
         jest.advanceTimersByTime(0);
-        await testRenderUsers(container, { data: [], error: BIG_NUMBER_ERROR, isPending: false });
+        await testRenderUsers(container, { result: [], error: BIG_NUMBER_ERROR, isPending: false });
 
         rerender(<UsersNonPromise ids={[1, 2, 3]} />);
 
         jest.advanceTimersByTime(0);
-        await testRenderUsers(container, { data: [1, 2, 3], error: NO_ERROR, isPending: false });
+        await testRenderUsers(container, { result: [1, 2, 3], error: NO_ERROR, isPending: false });
       });
 
       it('should notify with success', async () => {
@@ -360,7 +360,7 @@ describe('useAsync.js', () => {
         );
 
         jest.advanceTimersByTime(0);
-        await testRenderUsers(container, { data: [1, 2, 3], error: NO_ERROR, isPending: false });
+        await testRenderUsers(container, { result: [1, 2, 3], error: NO_ERROR, isPending: false });
         expect(onError).not.toHaveBeenCalled();
         expect(onSuccess).toHaveBeenCalledTimes(1);
         expect(onSuccess).toHaveBeenCalledWith([{ id: 1 }, { id: 2 }, { id: 3 }], [1, 2, 3]);
@@ -374,7 +374,7 @@ describe('useAsync.js', () => {
         );
 
         jest.advanceTimersByTime(0);
-        await testRenderUsers(container, { data: [], error: BIG_NUMBER_ERROR, isPending: false });
+        await testRenderUsers(container, { result: [], error: BIG_NUMBER_ERROR, isPending: false });
         expect(onError).toHaveBeenCalledTimes(1);
         expect(onError).toHaveBeenCalledWith(BIG_NUMBER_ERROR, [100, 99, 98]);
         expect(onSuccess).not.toHaveBeenCalled();
@@ -446,13 +446,13 @@ describe('useAsync.js', () => {
         fireEvent.click(container.querySelector('button.execute'));
 
         jest.advanceTimersByTime(100);
-        await testRenderUsers(container, { data: [], error: NO_ERROR, isPending: true });
+        await testRenderUsers(container, { result: [], error: NO_ERROR, isPending: true });
 
         jest.advanceTimersByTime(1000);
-        await testRenderUsers(container, { data: [1, 2, 3], error: NO_ERROR, isPending: false });
+        await testRenderUsers(container, { result: [1, 2, 3], error: NO_ERROR, isPending: false });
 
         jest.advanceTimersByTime(5000);
-        await testRenderUsers(container, { data: [1, 2, 3], error: NO_ERROR, isPending: false });
+        await testRenderUsers(container, { result: [1, 2, 3], error: NO_ERROR, isPending: false });
       });
 
       it('should rerender with lazy error when re-execute', async () => {
@@ -462,13 +462,13 @@ describe('useAsync.js', () => {
         fireEvent.click(container.querySelector('button.execute'));
 
         jest.advanceTimersByTime(100);
-        await testRenderUsers(container, { data: [], error: NO_ERROR, isPending: true });
+        await testRenderUsers(container, { result: [], error: NO_ERROR, isPending: true });
 
         jest.advanceTimersByTime(1000);
-        await testRenderUsers(container, { data: [], error: BIG_NUMBER_ERROR, isPending: false });
+        await testRenderUsers(container, { result: [], error: BIG_NUMBER_ERROR, isPending: false });
 
         jest.advanceTimersByTime(5000);
-        await testRenderUsers(container, { data: [], error: BIG_NUMBER_ERROR, isPending: false });
+        await testRenderUsers(container, { result: [], error: BIG_NUMBER_ERROR, isPending: false });
       });
 
       it('should cancel render with lazy success', async () => {
@@ -478,15 +478,15 @@ describe('useAsync.js', () => {
         fireEvent.click(container.querySelector('button.execute'));
 
         jest.advanceTimersByTime(100);
-        await testRenderUsers(container, { data: [], error: NO_ERROR, isPending: true });
+        await testRenderUsers(container, { result: [], error: NO_ERROR, isPending: true });
 
         fireEvent.click(container.querySelector('button.cancel'));
 
         jest.advanceTimersByTime(1000);
-        await testRenderUsers(container, { data: [], error: ABORT_ERROR, isPending: false });
+        await testRenderUsers(container, { result: [], error: ABORT_ERROR, isPending: false });
 
         jest.advanceTimersByTime(5000);
-        await testRenderUsers(container, { data: [], error: ABORT_ERROR, isPending: false });
+        await testRenderUsers(container, { result: [], error: ABORT_ERROR, isPending: false });
       });
 
       it('should cancel render with lazy error', async () => {
@@ -496,15 +496,15 @@ describe('useAsync.js', () => {
         fireEvent.click(container.querySelector('button.execute'));
 
         jest.advanceTimersByTime(100);
-        await testRenderUsers(container, { data: [], error: NO_ERROR, isPending: true });
+        await testRenderUsers(container, { result: [], error: NO_ERROR, isPending: true });
 
         fireEvent.click(container.querySelector('button.cancel'));
 
         jest.advanceTimersByTime(1000);
-        await testRenderUsers(container, { data: [], error: ABORT_ERROR, isPending: false });
+        await testRenderUsers(container, { result: [], error: ABORT_ERROR, isPending: false });
 
         jest.advanceTimersByTime(5000);
-        await testRenderUsers(container, { data: [], error: ABORT_ERROR, isPending: false });
+        await testRenderUsers(container, { result: [], error: ABORT_ERROR, isPending: false });
       });
     });
 
@@ -571,7 +571,7 @@ describe('useAsync.js', () => {
         fireEvent.click(container.querySelector('button.execute'));
 
         jest.advanceTimersByTime(0);
-        await testRenderUsers(container, { data: [1, 2, 3], error: NO_ERROR, isPending: false });
+        await testRenderUsers(container, { result: [1, 2, 3], error: NO_ERROR, isPending: false });
       });
 
       it('should rerender with error when re-execute', async () => {
@@ -581,7 +581,7 @@ describe('useAsync.js', () => {
         fireEvent.click(container.querySelector('button.execute'));
 
         jest.advanceTimersByTime(0);
-        await testRenderUsers(container, { data: [], error: BIG_NUMBER_ERROR, isPending: false });
+        await testRenderUsers(container, { result: [], error: BIG_NUMBER_ERROR, isPending: false });
       });
     });
   });

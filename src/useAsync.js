@@ -5,6 +5,8 @@ import {
   useReducer,
 } from 'react';
 
+const noop = () => {};
+
 const Action = {
   EXECUTE: 'execute',
   RESOLVE: 'resolve',
@@ -17,7 +19,7 @@ function taskReducer(state, { type, payload }) {
       return { ...state, isPending: true };
 
     case Action.RESOLVE:
-      return { data: payload, isPending: false };
+      return { result: payload, isPending: false };
 
     case Action.REJECT:
       return { error: payload, isPending: false };
@@ -50,7 +52,7 @@ function executeTask(createTask, inputs) {
     const taskPromise = (task instanceof Promise ? task : Promise.resolve(task));
     proxyPromise = new Promise((resolve, reject) => {
       taskPromise.then(
-        data => (isCancelled ? reject(createAbortError()) : resolve(data)),
+        result => (isCancelled ? reject(createAbortError()) : resolve(result)),
         error => (isCancelled ? reject(createAbortError()) : reject(error)),
       );
     });
@@ -67,10 +69,10 @@ function executeTaskOnEffect(dispatch, createTask, inputs, { onError, onSuccess 
   dispatch({ type: Action.EXECUTE });
 
   task.promise.then(
-    data => {
-      dispatch({ type: Action.RESOLVE, payload: data });
+    result => {
+      dispatch({ type: Action.RESOLVE, payload: result });
       if (onSuccess) {
-        onSuccess(data, inputs);
+        onSuccess(result, inputs);
       }
     },
     error => {
@@ -87,7 +89,7 @@ function executeTaskOnEffect(dispatch, createTask, inputs, { onError, onSuccess 
 function useAsyncInternal(createTask, inputs, { onError, onSuccess, isOnDemand }) {
   const staticConfig = useRef({ isOnDemand }).current;
 
-  const selfRef = useRef({ task: {} });
+  const selfRef = useRef({ task: { cancel: noop } });
   const self = selfRef.current;
   useEffect(
     () => {
@@ -104,7 +106,7 @@ function useAsyncInternal(createTask, inputs, { onError, onSuccess, isOnDemand }
   useEffect(
     () => {
       if (staticConfig.isOnDemand && count === 0) {
-        return () => {};
+        return noop;
       }
 
       const task = executeTaskOnEffect(
