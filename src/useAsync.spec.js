@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 
 import {
   render,
@@ -22,6 +22,12 @@ function UsersInternal({
   useAsyncFn,
   returnAsPromise,
 }) {
+  const idsMemo = useMemo(
+    () => ids,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [(ids || []).join(',')],
+  );
+
   const {
     result,
     error,
@@ -29,7 +35,7 @@ function UsersInternal({
     cancel,
     execute,
   } = useAsyncFn(
-    runtimeIds => {
+    ([runtimeIds = []]) => {
       if (returnAsPromise) {
         return new Promise((resolve, reject) => {
           setTimeout(
@@ -54,7 +60,7 @@ function UsersInternal({
 
       throw BIG_NUMBER_ERROR;
     },
-    ids || undefined,
+    (idsMemo ? [idsMemo] : undefined),
     (onError && onSuccess ? { onError, onSuccess } : undefined),
   );
 
@@ -209,13 +215,12 @@ describe('useAsync.js', () => {
         await testRenderUsers(container, { result: [1, 2, 3], error: NO_ERROR, isPending: false });
         expect(onError).not.toHaveBeenCalled();
         expect(onSuccess).toHaveBeenCalledTimes(1);
-        expect(onSuccess).toHaveBeenCalledWith([{ id: 1 }, { id: 2 }, { id: 3 }], [1, 2, 3]);
+        expect(onSuccess).toHaveBeenCalledWith([{ id: 1 }, { id: 2 }, { id: 3 }], [[1, 2, 3]]);
 
         jest.advanceTimersByTime(5000);
         await testRenderUsers(container, { result: [1, 2, 3], error: NO_ERROR, isPending: false });
         expect(onError).not.toHaveBeenCalled();
         expect(onSuccess).toHaveBeenCalledTimes(1);
-        expect(onSuccess).toHaveBeenCalledWith([{ id: 1 }, { id: 2 }, { id: 3 }], [1, 2, 3]);
       });
 
       it('should notify with lazy error', async () => {
@@ -233,13 +238,12 @@ describe('useAsync.js', () => {
         jest.advanceTimersByTime(1000);
         await testRenderUsers(container, { result: [], error: BIG_NUMBER_ERROR, isPending: false });
         expect(onError).toHaveBeenCalledTimes(1);
-        expect(onError).toHaveBeenCalledWith(BIG_NUMBER_ERROR, [100, 99, 98]);
+        expect(onError).toHaveBeenCalledWith(BIG_NUMBER_ERROR, [[100, 99, 98]]);
         expect(onSuccess).not.toHaveBeenCalled();
 
         jest.advanceTimersByTime(5000);
         await testRenderUsers(container, { result: [], error: BIG_NUMBER_ERROR, isPending: false });
         expect(onError).toHaveBeenCalledTimes(1);
-        expect(onError).toHaveBeenCalledWith(BIG_NUMBER_ERROR, [100, 99, 98]);
         expect(onSuccess).not.toHaveBeenCalled();
       });
 
@@ -363,7 +367,7 @@ describe('useAsync.js', () => {
         await testRenderUsers(container, { result: [1, 2, 3], error: NO_ERROR, isPending: false });
         expect(onError).not.toHaveBeenCalled();
         expect(onSuccess).toHaveBeenCalledTimes(1);
-        expect(onSuccess).toHaveBeenCalledWith([{ id: 1 }, { id: 2 }, { id: 3 }], [1, 2, 3]);
+        expect(onSuccess).toHaveBeenCalledWith([{ id: 1 }, { id: 2 }, { id: 3 }], [[1, 2, 3]]);
       });
 
       it('should notify with error', async () => {
@@ -376,7 +380,7 @@ describe('useAsync.js', () => {
         jest.advanceTimersByTime(0);
         await testRenderUsers(container, { result: [], error: BIG_NUMBER_ERROR, isPending: false });
         expect(onError).toHaveBeenCalledTimes(1);
-        expect(onError).toHaveBeenCalledWith(BIG_NUMBER_ERROR, [100, 99, 98]);
+        expect(onError).toHaveBeenCalledWith(BIG_NUMBER_ERROR, [[100, 99, 98]]);
         expect(onSuccess).not.toHaveBeenCalled();
       });
     });

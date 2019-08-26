@@ -64,22 +64,18 @@ function executeTask(createTask, inputs) {
   return { cancel, promise: proxyPromise };
 }
 
-function executeTaskOnEffect(dispatch, createTask, inputs, { onError, onSuccess }) {
+function executeTaskOnEffect(dispatch, createTask, inputs, { onError = noop, onSuccess = noop }) {
   const task = executeTask(createTask, inputs);
   dispatch({ type: Action.EXECUTE });
 
   task.promise.then(
     result => {
       dispatch({ type: Action.RESOLVE, payload: result });
-      if (onSuccess) {
-        onSuccess(result, inputs);
-      }
+      onSuccess(result, inputs);
     },
     error => {
       dispatch({ type: Action.REJECT, payload: error });
-      if (onError) {
-        onError(error, inputs);
-      }
+      onError(error, inputs);
     },
   );
 
