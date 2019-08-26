@@ -3,6 +3,7 @@
   "version": "0.0.2",
   "description": "Playing with async task in React",
   "main": "lib/index.js",
+  "types": "index.d.ts",
   "scripts": {
     "build": "npm run clean && babel src --out-dir lib --ignore \"**/*.spec.js\",\"**/*.test.js\"",
     "clean": "rimraf lib coverage",
