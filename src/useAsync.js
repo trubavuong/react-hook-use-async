@@ -22,6 +22,7 @@ function taskReducer(state, { type, payload }) {
     case Action.REJECT:
       return { data: null, error: payload, isPending: false };
 
+    /* istanbul ignore next */
     default:
       return state;
   }
@@ -32,10 +33,9 @@ function initTaskState() {
 }
 
 function createAbortError() {
-  return {
-    name: 'AbortError',
-    message: 'The operation was aborted',
-  };
+  const error = new Error('The operation was aborted');
+  error.name = 'AbortError';
+  return error;
 }
 
 function executeTask(createTask, inputs) {
@@ -44,14 +44,20 @@ function executeTask(createTask, inputs) {
     isCancelled = true;
   };
 
-  const task = createTask(inputs);
-  const taskPromise = (task instanceof Promise ? task : Promise.resolve(task));
-  const proxyPromise = new Promise((resolve, reject) => {
-    taskPromise.then(
-      data => (isCancelled ? reject(createAbortError()) : resolve(data)),
-      error => (isCancelled ? reject(createAbortError()) : reject(error)),
-    );
-  });
+  let proxyPromise;
+  try {
+    const task = createTask(inputs);
+    const taskPromise = (task instanceof Promise ? task : Promise.resolve(task));
+    proxyPromise = new Promise((resolve, reject) => {
+      taskPromise.then(
+        data => (isCancelled ? reject(createAbortError()) : resolve(data)),
+        error => (isCancelled ? reject(createAbortError()) : reject(error)),
+      );
+    });
+  }
+  catch (error) {
+    proxyPromise = Promise.reject(error);
+  }
 
   return { cancel, promise: proxyPromise };
 }
