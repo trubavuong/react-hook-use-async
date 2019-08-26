@@ -17,10 +17,10 @@ function taskReducer(state, { type, payload }) {
       return { ...state, isPending: true };
 
     case Action.RESOLVE:
-      return { data: payload, error: null, isPending: false };
+      return { data: payload, isPending: false };
 
     case Action.REJECT:
-      return { data: null, error: payload, isPending: false };
+      return { error: payload, isPending: false };
 
     /* istanbul ignore next */
     default:
@@ -29,7 +29,7 @@ function taskReducer(state, { type, payload }) {
 }
 
 function initTaskState() {
-  return { data: null, error: null, isPending: false };
+  return { isPending: false };
 }
 
 function createAbortError() {
