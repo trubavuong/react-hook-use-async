@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 
 import {
   render,
@@ -22,12 +22,6 @@ function UsersInternal({
   useAsyncFn,
   returnAsPromise,
 }) {
-  const idsMemo = useMemo(
-    () => ids,
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [(ids || []).join(',')],
-  );
-
   const {
     result,
     error,
@@ -60,7 +54,7 @@ function UsersInternal({
 
       throw BIG_NUMBER_ERROR;
     },
-    (idsMemo ? [idsMemo] : undefined),
+    (ids ? [ids] : undefined),
     (onError && onSuccess ? { onError, onSuccess } : undefined),
   );
 
