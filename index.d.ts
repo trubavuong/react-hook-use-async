@@ -13,7 +13,7 @@ interface Config<Result, Inputs> {
 }
 
 interface Injection {
-  abortSignal: AbortController['signal']
+  abortSignal?: AbortController['signal']
 }
 
 declare function useAsync<Result, Inputs extends any[]>(
