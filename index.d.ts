@@ -12,8 +12,12 @@ interface Config<Result, Inputs> {
   onSuccess?: (result: Result, inputs: Inputs) => void,
 }
 
+interface Injection {
+  abortSignal: AbortController['signal']
+}
+
 declare function useAsync<Result, Inputs extends any[]>(
-  createTask: (inputs: Inputs) => Promise<Result> | Result,
+  createTask: (inputs: Inputs, injection: Injection) => Promise<Result> | Result,
   inputs?: Inputs,
   config?: Config<Result, Inputs>,
 ): AsyncResult<Result>;

@@ -41,14 +41,21 @@ function createAbortError() {
 }
 
 function executeTask(createTask, inputs) {
+  const abortController = (typeof AbortController !== 'undefined' ? new AbortController() : null);
+  const abortSignal = (abortController ? abortController.signal : undefined);
+  const abortByController = (abortController ? () => abortController.abort() : noop);
+
+  const injection = { abortSignal };
+
   let isCancelled = false;
   const cancel = () => {
     isCancelled = true;
+    abortByController();
   };
 
   let proxyPromise;
   try {
-    const task = createTask(inputs);
+    const task = createTask(inputs, injection);
     const taskPromise = (task instanceof Promise ? task : Promise.resolve(task));
     proxyPromise = new Promise((resolve, reject) => {
       taskPromise.then(
