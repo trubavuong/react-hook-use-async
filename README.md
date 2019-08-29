@@ -12,6 +12,7 @@ Give me an async task, I'll give you its insights!
 -   [Feature Comparison](#feature-comparison)
 -   [API](#api)
 -   [FAQ](#faq)
+-   [Demo](#demo)
 -   [License](#license)
 
 ## Features
@@ -297,6 +298,12 @@ function Example({ id }) {
 ### When we get notified about completed task via `onSuccess()` or `onError()`, which version of callback is used?
 
 No matter how often callback changes, its version in the same execution render will be used.
+
+## Demo
+
+Website: <https://wecodenow-react-hook-use-async.stackblitz.io>
+
+Playground: <https://stackblitz.com/edit/wecodenow-react-hook-use-async>
 
 ## License
 
