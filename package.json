@@ -1,6 +1,6 @@
 {
   "name": "react-hook-use-async",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Playing with an async task in React",
   "main": "lib/index.js",
   "types": "index.d.ts",
