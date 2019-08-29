@@ -19,7 +19,7 @@ Give me an async task, I'll give you its insights!
 ## Features
 
 -   Render async task's result without headache.
--   Get notified when async task is complete (success, error, cancel).
+-   Get notified when the async task is complete (success, error, cancel).
 -   Support automatically and on-demand re-execute async task.
 -   Support automatically and on-demand cancellation.
 
@@ -31,23 +31,17 @@ $ npm install --save react-hook-use-async
 
 ## Problem
 
-Async task is very common stuff in application. For example, fetching todo list,
-follow a person, uploading images... And we need a convenient way to execute async
-task and render its result when the task is complete.
+Async task is a very common stuff in application. For example, fetch todo list, follow a person, upload images... And we need a convenient way to execute an async task and render its result when the task is complete.
 
 This package provides two convenient hooks to deal with common use cases:
 
 -   `useAsync(createTask, inputs, config)`
 
-    Execute async task on component get mounted and detect inputs change to re-execute.
-    It's useful for data fetching. It also supports cancellation, especially for `fetch()`.
-    See [API below](#useasync).
+    Execute async task on the component gets mounted and detect inputs change to re-execute. It's useful for data fetching. It also supports cancellation, especially for `fetch()`. See [API below](#useasync).
 
 -   `useAsyncOnDemand(createTask, inputs, config)`
 
-    Execute async task on-demand. It's useful for `click-to-action-button` use case,
-    such as follow a person. It also supports cancellation, especially for `fetch()`.
-    See [API below](#useasyncondemand).
+    Execute an async task on-demand. It's useful for `click-to-action-button` use cases, such as follow a person. It also supports cancellation, especially for `fetch()`. See [API below](#useasyncondemand).
 
 ## Example
 
@@ -131,7 +125,7 @@ function FollowUserBtn({ id }) {
     onError: (error, [id]) => {
       const message =
         error.name === 'AbortError'
-          ? `Cancelled follow user ${id}`
+          ? `Canceled follow user ${id}`
           : `Got error while trying to follow user ${id}: ${error.message}`;
       console.log(message);
     },
@@ -151,7 +145,6 @@ function FollowUserBtn({ id }) {
 | Execute on mount                   |      ✓     |                    |
 | Re-execute on inputs change        |      ✓     |                    |
 | Re-execute on-demand               |      ✓     |          ✓         |
-| Re-execute with latest inputs      |      ✓     |          ✓         |
 | Cancel on unmount                  |      ✓     |          ✓         |
 | Cancel on re-execute               |      ✓     |          ✓         |
 | Cancel on-demand                   |      ✓     |          ✓         |
@@ -161,8 +154,7 @@ function FollowUserBtn({ id }) {
 
 ### useAsync
 
-A react hook to let you execute async task in two ways: inputs change or on-demand
-call `execute()`.
+A React hook to let you execute an async task in two ways: inputs change or on-demand call `execute()`.
 
 ```js
 const {
@@ -192,13 +184,13 @@ const {
   // any[], default: []
   //
   // This array is used to create task. If it's changed, old task will
-  // be cancelled and new task will be created. If your inputs shape
+  // be canceled and new task will be created. If your inputs shape
   // seems not to be changed but new task still be created infinitely,
   // the reason is because React uses `Object.is()` comparison algorithm,
   // shallow comparison. In short, inputs must be an array of primitives,
   // else you should memoize non-primitive values for yourself.
   //
-  // Other note: size MUST BE consistent between rerenders!
+  // Other note: size MUST BE consistent between renders!
   inputs,
 
   // optional config
@@ -219,38 +211,68 @@ const {
 
 ### useAsyncOnDemand
 
-A react hook to let you execute async task in only one way: on-demand call `execute()`.
-It's perfect for click-to-action-button use case.
+A React hook to let you execute an async task in only one way: on-demand call `execute()`. It's perfect for click-to-action-button use cases.
 
 Signuare is same as [useAsync](#useasync).
 
 ## FAQ
 
-### When async task will be executed?
+### When the async task will be executed?
 
 Let me show you two common use cases:
 
--   `Data fetching` - Data should be fetched **on component mount and on inputs change**,
-    such as apply filters using form. You also want to put a `Fetch` button to let you
-    fetch data on-demand whenever you want. In this case, you must use `useAsync()` hook.
+-   `Data fetching` - Data should be fetched on the component gets mounted and inputs change, such as apply filters using form. You also want to put a `Fetch` button to let you fetch data on-demand whenever you want. In this case, you must use `useAsync()` hook.
 
--   `Click-to-action-button` - You don't want any automatic mechanism. You want to click
-    a button to do something, such as follow a person, or you want to refetch data after
-    you delete a data item. In this case, you must use `useAsyncOnDemand()` hook.
+-   `Click-to-action-button` - You don't want any automatic mechanism. You want to click a button to do something, such as follow a person, or you want to refetch data after you delete a data item. In this case, you must use `useAsyncOnDemand()` hook.
 
-### Why I got infinite refetch loop when using `useAsync()` hook?
+### Why I got infinite re-fetch loop when using `useAsync()` hook?
 
-Understand by examples:
+Be sure `inputs` don't change in every render. Understand by examples:
 
 ```jsx
 function Example({ id }) {
   // your `inputs`: [ { id } ]
-  // BUT `{ id }` is always new in every rerender!
+  // BUT `{ id }` is always new in every render!
   const task = useAsync(([{ id }]) => fetchSomethingById(id), [{ id }]);
 }
 ```
 
-### Can I manually execute async task at anytime?
+### Why is there no new async task execution when `inputs` change?
+
+If you use `useAsync()` hook, be sure `inputs` changes or size of `inputs` must be the same between renders.
+
+```jsx
+function Example({ ids }) {
+  // first render: ids = [1, 2, 3], inputs = [1, 2, 3]
+  // second render: ids = [1, 2], inputs = [1, 2]
+  // size changes => don't execute new async task!
+  const task = useAsync(ids => doSomething(ids), ids);
+}
+```
+
+If you use `useAsyncOnDemand()` hook, you must execute on-demand. See below for more details.
+
+### Why is there no new async task execution when `createTask()` changes every render?
+
+Because of convenient. Sometimes you might want to write code like this and you don't expect re-execution happens:
+
+```jsx
+function Example({ id }) {
+  // createTask() changes every render!
+  const task = useAsync(([id]) => doSomething(id), [id]);
+
+  // DO NOT use write this code!
+  // const task = useAsync(() => doSomething(id), []);
+}
+```
+
+Make `createTask()` depends on `inputs` as param, move it out of React component if possible for clarification.
+
+### Why happens when `inputs` change if using `useAsyncOnDemand()` hook?
+
+No execution at all. When you execute on-demand, the latest `inputs` will be used to create a new async task.
+
+### Can I manually execute an async task at any time?
 
 Yes. Via `execute()` function in `useAsync() / useAsyncOnDemand()` result.
 
@@ -262,10 +284,9 @@ function Example() {
 
 ### Is cancellation is supported?
 
-Yes. An async task will be cancelled before new async task to be executed or when
-component get unmounted.
+Yes. An async task will be canceled before a new async task to be executed or when the component gets unmounted.
 
-### Can I manually cancel async task at anytime?
+### Can I manually cancel the async task at any time?
 
 Yes. Via `cancel()` function in `useAsync() / useAsyncOnDemand()` result.
 
@@ -274,6 +295,10 @@ function Example({ id }) {
   const { cancel } = useAsync(...);
 }
 ```
+
+### When we get notified about completed task via `onSuccess()` or `onError()`, which version of callback is used?
+
+No matter how often callback changes, its version in the same execution render will be used.
 
 ## License
 
