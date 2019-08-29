@@ -11,8 +11,6 @@ Give me an async task, I'll give you its insights!
 -   [Problem](#problem)
 -   [Feature Comparison](#feature-comparison)
 -   [API](#api)
-    -   [useAsync](#useasync)
-    -   [useAsyncOnDemand](#useasyncondemand)
 -   [FAQ](#faq)
 -   [License](#license)
 

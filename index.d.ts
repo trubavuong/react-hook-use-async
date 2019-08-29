@@ -16,17 +16,17 @@ interface Injection {
   abortSignal?: AbortController['signal']
 }
 
-declare function useAsync<Result, Inputs extends any[]>(
+declare const useAsync: <Result, Inputs extends any[]>(
   createTask: (inputs: Inputs, injection: Injection) => Promise<Result> | Result,
   inputs?: Inputs,
   config?: Config<Result, Inputs>,
-): AsyncResult<Result>;
+) => AsyncResult<Result>;
 
-declare function useAsyncOnDemand<Result, Inputs extends any[]>(
+declare const useAsyncOnDemand: <Result, Inputs extends any[]>(
   createTask: (inputs: Inputs) => Promise<Result> | Result,
   inputs?: Inputs,
   config?: Config<Result, Inputs>,
-): AsyncResult<Result>;
+) => AsyncResult<Result>;
 
 export default useAsync;
 export { useAsyncOnDemand };
