@@ -1,12 +1,7 @@
 import { useRef, useState, useEffect } from 'react';
 
 const noop = () => { };
-
-function createAbortError() {
-  const error = new Error('The operation was aborted');
-  error.name = 'AbortError';
-  return error;
-}
+const ABORT_ERROR = {};
 
 function executeTask(createTask, inputs) {
   const abortController = (typeof AbortController !== 'undefined' ? new AbortController() : null);
@@ -23,13 +18,12 @@ function executeTask(createTask, inputs) {
 
   let proxyPromise;
   try {
-    const abortError = createAbortError();
     const task = createTask(inputs, injection);
     const taskPromise = (task instanceof Promise ? task : Promise.resolve(task));
     proxyPromise = new Promise((resolve, reject) => {
       taskPromise.then(
-        result => (isCanceled ? reject(abortError) : resolve(result)),
-        error => (isCanceled ? reject(abortError) : reject(error)),
+        result => (isCanceled ? reject(ABORT_ERROR) : resolve(result)),
+        error => (isCanceled ? reject(ABORT_ERROR) : reject(error)),
       );
     });
   }
@@ -78,8 +72,13 @@ function useAsyncInternal(createTask, inputs, { onError, onSuccess, isOnDemand }
           onSuccessSelf(result, inputs);
         },
         error => {
-          setState({ error, isPending: false });
-          onErrorSelf(error, inputs);
+          if (error === ABORT_ERROR) {
+            setState(prevState => ({ ...prevState, isPending: false }));
+          }
+          else {
+            setState({ error, isPending: false });
+            onErrorSelf(error, inputs);
+          }
         },
       );
       self.task = task;

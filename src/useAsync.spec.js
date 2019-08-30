@@ -13,7 +13,6 @@ import useAsync, { useAsyncOnDemand } from './useAsync';
 
 const NO_ERROR = { message: '' };
 const BIG_NUMBER_ERROR = new Error('BigNumber');
-const ABORT_ERROR = { message: 'The operation was aborted' };
 
 function UsersInternal({
   ids,
@@ -250,10 +249,10 @@ describe('useAsync.js', () => {
         fireEvent.click(container.querySelector('button.cancel'));
 
         jest.advanceTimersByTime(1000);
-        await testRenderUsers(container, { result: [], error: ABORT_ERROR, isPending: false });
+        await testRenderUsers(container, { result: [], error: NO_ERROR, isPending: false });
 
         jest.advanceTimersByTime(5000);
-        await testRenderUsers(container, { result: [], error: ABORT_ERROR, isPending: false });
+        await testRenderUsers(container, { result: [], error: NO_ERROR, isPending: false });
       });
 
       it('should cancel render with lazy error', async () => {
@@ -265,10 +264,10 @@ describe('useAsync.js', () => {
         fireEvent.click(container.querySelector('button.cancel'));
 
         jest.advanceTimersByTime(1000);
-        await testRenderUsers(container, { result: [], error: ABORT_ERROR, isPending: false });
+        await testRenderUsers(container, { result: [], error: NO_ERROR, isPending: false });
 
         jest.advanceTimersByTime(5000);
-        await testRenderUsers(container, { result: [], error: ABORT_ERROR, isPending: false });
+        await testRenderUsers(container, { result: [], error: NO_ERROR, isPending: false });
       });
 
       it('should rerender with lazy success when re-execute', async () => {
@@ -315,10 +314,10 @@ describe('useAsync.js', () => {
         fireEvent.click(container.querySelector('button.cancel'));
 
         jest.advanceTimersByTime(1000);
-        await testRenderUsers(container, { result: [], error: ABORT_ERROR, isPending: false });
+        await testRenderUsers(container, { result: [], error: NO_ERROR, isPending: false });
 
         jest.advanceTimersByTime(5000);
-        await testRenderUsers(container, { result: [], error: ABORT_ERROR, isPending: false });
+        await testRenderUsers(container, { result: [], error: NO_ERROR, isPending: false });
 
         global.AbortController = AbortController;
       });
@@ -501,10 +500,10 @@ describe('useAsync.js', () => {
         fireEvent.click(container.querySelector('button.cancel'));
 
         jest.advanceTimersByTime(1000);
-        await testRenderUsers(container, { result: [], error: ABORT_ERROR, isPending: false });
+        await testRenderUsers(container, { result: [], error: NO_ERROR, isPending: false });
 
         jest.advanceTimersByTime(5000);
-        await testRenderUsers(container, { result: [], error: ABORT_ERROR, isPending: false });
+        await testRenderUsers(container, { result: [], error: NO_ERROR, isPending: false });
       });
 
       it('should cancel render with lazy error', async () => {
@@ -519,10 +518,10 @@ describe('useAsync.js', () => {
         fireEvent.click(container.querySelector('button.cancel'));
 
         jest.advanceTimersByTime(1000);
-        await testRenderUsers(container, { result: [], error: ABORT_ERROR, isPending: false });
+        await testRenderUsers(container, { result: [], error: NO_ERROR, isPending: false });
 
         jest.advanceTimersByTime(5000);
-        await testRenderUsers(container, { result: [], error: ABORT_ERROR, isPending: false });
+        await testRenderUsers(container, { result: [], error: NO_ERROR, isPending: false });
       });
     });
 
