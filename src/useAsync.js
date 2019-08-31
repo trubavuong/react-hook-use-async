@@ -5,33 +5,31 @@ const ABORT_ERROR = {};
 
 function executeTask(createTask, inputs) {
   const abortController = (typeof AbortController !== 'undefined' ? new AbortController() : null);
-  const abortSignal = (abortController ? abortController.signal : undefined);
-  const abortByController = (abortController ? () => abortController.abort() : noop);
-
-  const injection = { abortSignal };
 
   let isCanceled = false;
   const cancel = () => {
     isCanceled = true;
-    abortByController();
+    if (abortController) {
+      abortController.abort();
+    }
   };
 
-  let proxyPromise;
-  try {
-    const task = createTask(inputs, injection);
-    const taskPromise = (task instanceof Promise ? task : Promise.resolve(task));
-    proxyPromise = new Promise((resolve, reject) => {
+  const promise = new Promise((resolve, reject) => {
+    try {
+      const injection = { abortSignal: abortController && abortController.signal };
+      const task = createTask(inputs, injection);
+      const taskPromise = (task instanceof Promise ? task : Promise.resolve(task));
       taskPromise.then(
         result => (isCanceled ? reject(ABORT_ERROR) : resolve(result)),
         error => (isCanceled ? reject(ABORT_ERROR) : reject(error)),
       );
-    });
-  }
-  catch (error) {
-    proxyPromise = Promise.reject(error);
-  }
+    }
+    catch (error) {
+      reject(error);
+    }
+  });
 
-  return { cancel, promise: proxyPromise };
+  return { cancel, promise };
 }
 
 function useAsyncInternal(createTask, inputs, {
