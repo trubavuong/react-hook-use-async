@@ -36,7 +36,7 @@ This package provides two convenient hooks to deal with them:
 
 -   `useAsync(createTask, inputs, config)`
 
-    Execute async task on the component gets mounted and detect inputs change to re-execute. It's useful for **data fetching**. It also supports cancellation, especially for `fetch()`. See [API below](#useasync).
+    Execute async task on the component gets mounted and detect `inputs` changes to re-execute. It's useful for **data fetching**. It also supports cancellation, especially for `fetch()`. See [API below](#useasync).
 
 -   `useAsyncOnDemand(createTask, inputs, config)`
 
@@ -143,7 +143,7 @@ function FollowUserBtn({ id }) {
 | Feature                            | useAsync() | useAsyncOnDemand() |
 | :--------------------------------- | :--------: | :----------------: |
 | Execute on mount                   |      ✓     |                    |
-| Re-execute on inputs change        |      ✓     |                    |
+| Re-execute on inputs changes       |      ✓     |                    |
 | Re-execute on-demand               |      ✓     |          ✓         |
 | Cancel on unmount                  |      ✓     |          ✓         |
 | Cancel on re-execute               |      ✓     |          ✓         |
@@ -154,7 +154,7 @@ function FollowUserBtn({ id }) {
 
 ### useAsync
 
-A React hook to let you execute an async task in two ways: inputs change or on-demand call `execute()`.
+A React hook to let you execute an async task in two ways: inputs changes or on-demand call `execute()`.
 
 ```js
 const {
@@ -225,12 +225,12 @@ Signature is same as [useAsync](#useasync).
 
 Let me show you two common use cases:
 
--   **Data fetching** - Data should be fetched on the component gets mounted and inputs change, such as apply filters using form. You also want to put a `Fetch` button to let you fetch data on-demand whenever you want. In this case, you must use `useAsync()` hook.
+-   **Data fetching** - Data should be fetched on the component gets mounted and inputs changes, such as apply filters using form. You also want to put a `Fetch` button to let you fetch data on-demand whenever you want. In this case, you must use `useAsync()` hook.
 -   **Click-to-action-button** - You don't want any automatic mechanism. You want to click a button to do something, such as follow a person, or you want to refetch data after you delete a data item. In this case, you must use `useAsyncOnDemand()` hook.
 
 ### Why I got infinite re-fetch loop when using useAsync() hook?
 
-Be sure `inputs` don't change in every render. Understand by examples:
+Be sure `inputs` doesn't change in every render. Understand by examples:
 
 ```jsx
 function Example({ id }) {
@@ -242,7 +242,7 @@ function Example({ id }) {
 
 ### Why is there no new async task execution when inputs change?
 
-If you use `useAsync()` hook, be sure `inputs` changes or size of `inputs` must be the same between renders.
+If you use `useAsync()` hook, be sure `inputs` changes and size of `inputs` must be the same between renders.
 
 ```jsx
 function Example({ ids }) {
@@ -271,7 +271,7 @@ function Example({ id }) {
 
 Make `createTask()` depends on `inputs` as param, move it out of React component if possible for clarification.
 
-### Why happens when inputs change if using useAsyncOnDemand() hook?
+### What happens when inputs changes if using useAsyncOnDemand() hook?
 
 No execution at all. When you execute on-demand, the latest `inputs` will be used to create a new async task.
 
