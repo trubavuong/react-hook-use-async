@@ -44,7 +44,7 @@ This package provides two convenient hooks to deal with them:
 
 ## Example
 
--   Fetch user using `useAsync()`
+### Fetch user using useAsync()
 
 ```jsx
 import useAsync from 'react-hook-use-async';
@@ -85,7 +85,7 @@ function User({ id }) {
 }
 ```
 
--   Follow user using `useAsyncOnDemand()`
+### Follow user using useAsyncOnDemand()
 
 ```jsx
 import { useAsyncOnDemand } from 'react-hook-use-async';
@@ -110,7 +110,7 @@ function FollowUserBtn({ id }) {
 }
 ```
 
--   Get notified when task is complete by using third argument of `useAsync() / useAsyncOnDemand()`
+### Get notified when task is complete
 
 ```jsx
 import { useAsyncOnDemand } from 'react-hook-use-async';
@@ -225,8 +225,8 @@ Signature is same as [useAsync](#useasync).
 
 Let me show you two common use cases:
 
--   `Data fetching` - Data should be fetched on the component gets mounted and inputs change, such as apply filters using form. You also want to put a `Fetch` button to let you fetch data on-demand whenever you want. In this case, you must use `useAsync()` hook.
--   `Click-to-action-button` - You don't want any automatic mechanism. You want to click a button to do something, such as follow a person, or you want to refetch data after you delete a data item. In this case, you must use `useAsyncOnDemand()` hook.
+-   **Data fetching** - Data should be fetched on the component gets mounted and inputs change, such as apply filters using form. You also want to put a `Fetch` button to let you fetch data on-demand whenever you want. In this case, you must use `useAsync()` hook.
+-   **Click-to-action-button** - You don't want any automatic mechanism. You want to click a button to do something, such as follow a person, or you want to refetch data after you delete a data item. In this case, you must use `useAsyncOnDemand()` hook.
 
 ### Why I got infinite re-fetch loop when using useAsync() hook?
 
