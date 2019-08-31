@@ -260,7 +260,7 @@ describe('useAsync.js', () => {
 
         fireEvent.click(container.querySelector('button.cancel'));
 
-        jest.advanceTimersByTime(1000);
+        jest.advanceTimersByTime(0);
         await testRenderUsers(container, { result: [], error: NO_ERROR, isPending: false });
         expect(onCancel).toHaveBeenCalledTimes(1);
         expect(onCancel).toHaveBeenCalledWith([[1, 2, 3]]);
@@ -280,7 +280,7 @@ describe('useAsync.js', () => {
 
         fireEvent.click(container.querySelector('button.cancel'));
 
-        jest.advanceTimersByTime(1000);
+        jest.advanceTimersByTime(0);
         await testRenderUsers(container, { result: [], error: NO_ERROR, isPending: false });
         expect(onCancel).toHaveBeenCalledTimes(1);
         expect(onCancel).toHaveBeenCalledWith([[100, 99, 98]]);
@@ -607,7 +607,7 @@ describe('useAsync.js', () => {
 
         fireEvent.click(container.querySelector('button.cancel'));
 
-        jest.advanceTimersByTime(1000);
+        jest.advanceTimersByTime(0);
         await testRenderUsers(container, { result: [], error: NO_ERROR, isPending: false });
         expect(onCancel).toHaveBeenCalledTimes(1);
         expect(onCancel).toHaveBeenCalledWith([[1, 2, 3]]);
@@ -630,7 +630,7 @@ describe('useAsync.js', () => {
 
         fireEvent.click(container.querySelector('button.cancel'));
 
-        jest.advanceTimersByTime(1000);
+        jest.advanceTimersByTime(0);
         await testRenderUsers(container, { result: [], error: NO_ERROR, isPending: false });
         expect(onCancel).toHaveBeenCalledTimes(1);
         expect(onCancel).toHaveBeenCalledWith([[100, 99, 98]]);

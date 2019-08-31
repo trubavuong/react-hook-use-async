@@ -4,24 +4,31 @@ const noop = () => { };
 const ABORT_ERROR = {};
 
 function executeTask(createTask, inputs) {
-  const abortController = (typeof AbortController !== 'undefined' ? new AbortController() : null);
+  const cleanups = [];
+  const cancel = () => {
+    cleanups.forEach(cleanup => cleanup());
+  };
 
   let isCanceled = false;
-  const cancel = () => {
+  cleanups.push(() => {
     isCanceled = true;
-    if (abortController) {
-      abortController.abort();
-    }
-  };
+  });
+
+  const abortController = (typeof AbortController !== 'undefined' ? new AbortController() : null);
+  if (abortController) {
+    cleanups.push(() => abortController.abort());
+  }
 
   const promise = new Promise((resolve, reject) => {
     try {
+      cleanups.push(() => reject(ABORT_ERROR));
+
       const injection = { abortSignal: abortController && abortController.signal };
       const task = createTask(inputs, injection);
       const taskPromise = (task instanceof Promise ? task : Promise.resolve(task));
       taskPromise.then(
-        result => (isCanceled ? reject(ABORT_ERROR) : resolve(result)),
-        error => (isCanceled ? reject(ABORT_ERROR) : reject(error)),
+        result => (!isCanceled && resolve(result)),
+        error => (!isCanceled && reject(error)),
       );
     }
     catch (error) {
