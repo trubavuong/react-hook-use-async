@@ -30,17 +30,17 @@ $ npm install --save react-hook-use-async
 
 ## Problem
 
-Async task is a very common stuff in application. For example, fetch todo list, follow a person, upload images... And we need a convenient way to execute an async task and render its result when the task is complete.
+Async task is a very common stuff in application. For example, fetch todo list, follow a person, upload images... and we need a convenient way to execute an async task and render its result when the task is complete.
 
-This package provides two convenient hooks to deal with common use cases:
+This package provides two convenient hooks to deal with them:
 
 -   `useAsync(createTask, inputs, config)`
 
-    Execute async task on the component gets mounted and detect inputs change to re-execute. It's useful for data fetching. It also supports cancellation, especially for `fetch()`. See [API below](#useasync).
+    Execute async task on the component gets mounted and detect inputs change to re-execute. It's useful for **data fetching**. It also supports cancellation, especially for `fetch()`. See [API below](#useasync).
 
 -   `useAsyncOnDemand(createTask, inputs, config)`
 
-    Execute an async task on-demand. It's useful for `click-to-action-button` use cases, such as follow a person. It also supports cancellation, especially for `fetch()`. See [API below](#useasyncondemand).
+    Execute an async task on-demand. It's useful for **click-to-action-button** use cases, such as follow a person. It also supports cancellation, especially for `fetch()`. See [API below](#useasyncondemand).
 
 ## Example
 
@@ -110,7 +110,7 @@ function FollowUserBtn({ id }) {
 }
 ```
 
--   Get notified when task is complete using third argument of `useAsync() / useAsyncOnDemand()`
+-   Get notified when task is complete by using third argument of `useAsync() / useAsyncOnDemand()`
 
 ```jsx
 import { useAsyncOnDemand } from 'react-hook-use-async';
@@ -122,10 +122,11 @@ function FollowUserBtn({ id }) {
       console.log(message);
     },
     onError: (error, [id]) => {
-      const message =
-        error.name === 'AbortError'
-          ? `Canceled follow user ${id}`
-          : `Got error while trying to follow user ${id}: ${error.message}`;
+      const message = `Got error while trying to follow user ${id}: ${error.message}`;
+      console.log(message);
+    },
+    onCancel: ([id]) => {
+      const message = `Canceled following user ${id}`;
       console.log(message);
     },
   });
@@ -163,7 +164,7 @@ const {
   result,
   // promise of current async task, default: undefined
   promise,
-  // async task is pending or not
+  // async task is pending or not, default: false
   isPending,
   // cancel current async task on-demand
   cancel,
@@ -182,12 +183,12 @@ const {
 
   // any[], default: []
   //
-  // This array is used to create task. If it's changed, old task will
-  // be canceled and new task will be created. If your inputs shape
-  // seems not to be changed but new task still be created infinitely,
-  // the reason is because React uses `Object.is()` comparison algorithm,
-  // shallow comparison. In short, inputs must be an array of primitives,
-  // else you should memoize non-primitive values for yourself.
+  // This array is used to create task. If it changes, the old task will
+  // be canceled and a new task will be created. If your inputs shape
+  // seems unchange but a new task still be created infinitely, the reason
+  // is because React uses `Object.is()` comparison algorithm, shallow
+  // comparison. In short, inputs must be an array of primitives, else
+  // you should memoize non-primitive values for yourself.
   //
   // Other note: size MUST BE consistent between renders!
   inputs,
@@ -196,9 +197,13 @@ const {
   config: {
     // (error, inputs) => void
     //
-    // Error callback will get called when async task get any errors,
-    // including cancellation as `AbortError`.
+    // Error callback will get called when async task get any errors.
     onError,
+
+    // (inputs) => void
+    //
+    // Cancel callback will get called when async task is canceled.
+    onCancel,
 
     // (result, inputs) => void
     //
@@ -210,9 +215,9 @@ const {
 
 ### useAsyncOnDemand
 
-A React hook to let you execute an async task in only one way: on-demand call `execute()`. It's perfect for click-to-action-button use cases.
+A React hook to let you execute an async task in only one way: on-demand call `execute()`. It's perfect for **click-to-action-button** use cases.
 
-Signuare is same as [useAsync](#useasync).
+Signature is same as [useAsync](#useasync).
 
 ## FAQ
 
@@ -224,7 +229,7 @@ Let me show you two common use cases:
 
 -   `Click-to-action-button` - You don't want any automatic mechanism. You want to click a button to do something, such as follow a person, or you want to refetch data after you delete a data item. In this case, you must use `useAsyncOnDemand()` hook.
 
-### Why I got infinite re-fetch loop when using `useAsync()` hook?
+### Why I got infinite re-fetch loop when using useAsync() hook?
 
 Be sure `inputs` don't change in every render. Understand by examples:
 
@@ -236,7 +241,7 @@ function Example({ id }) {
 }
 ```
 
-### Why is there no new async task execution when `inputs` change?
+### Why is there no new async task execution when inputs change?
 
 If you use `useAsync()` hook, be sure `inputs` changes or size of `inputs` must be the same between renders.
 
@@ -251,7 +256,7 @@ function Example({ ids }) {
 
 If you use `useAsyncOnDemand()` hook, you must execute on-demand. See below for more details.
 
-### Why is there no new async task execution when `createTask()` changes every render?
+### Why is there no new async task execution when createTask() changes every render?
 
 Because of convenient. Sometimes you might want to write code like this and you don't expect re-execution happens:
 
@@ -267,7 +272,7 @@ function Example({ id }) {
 
 Make `createTask()` depends on `inputs` as param, move it out of React component if possible for clarification.
 
-### Why happens when `inputs` change if using `useAsyncOnDemand()` hook?
+### Why happens when inputs change if using useAsyncOnDemand() hook?
 
 No execution at all. When you execute on-demand, the latest `inputs` will be used to create a new async task.
 
@@ -295,7 +300,7 @@ function Example({ id }) {
 }
 ```
 
-### When we get notified about completed task via `onSuccess()` or `onError()`, which version of callback is used?
+### When we get notified about completed task via onSuccess(), onError() or onCancel(), which version of callback is used?
 
 No matter how often callback changes, its version in the same execution render will be used.
 

@@ -17,6 +17,7 @@ const BIG_NUMBER_ERROR = new Error('BigNumber');
 function UsersInternal({
   ids,
   onError,
+  onCancel,
   onSuccess,
   useAsyncFn,
   returnAsPromise,
@@ -54,7 +55,8 @@ function UsersInternal({
       throw BIG_NUMBER_ERROR;
     },
     (ids ? [ids] : undefined),
-    (onError && onSuccess ? { onError, onSuccess } : undefined),
+
+    ((onError || onCancel || onSuccess) ? { onError, onCancel, onSuccess } : undefined),
   );
 
   return (
@@ -194,80 +196,98 @@ describe('useAsync.js', () => {
 
       it('should notify with lazy success', async () => {
         const onError = jest.fn();
+        const onCancel = jest.fn();
         const onSuccess = jest.fn();
         const { container } = render(
-          <Users ids={[1, 2, 3]} onError={onError} onSuccess={onSuccess} />,
+          <Users ids={[1, 2, 3]} onError={onError} onSuccess={onSuccess} onCancel={onCancel} />,
         );
 
         jest.advanceTimersByTime(100);
         await testRenderUsers(container, { result: [], error: NO_ERROR, isPending: true });
         expect(onError).not.toHaveBeenCalled();
+        expect(onCancel).not.toHaveBeenCalled();
         expect(onSuccess).not.toHaveBeenCalled();
 
         jest.advanceTimersByTime(1000);
         await testRenderUsers(container, { result: [1, 2, 3], error: NO_ERROR, isPending: false });
         expect(onError).not.toHaveBeenCalled();
+        expect(onCancel).not.toHaveBeenCalled();
         expect(onSuccess).toHaveBeenCalledTimes(1);
         expect(onSuccess).toHaveBeenCalledWith([{ id: 1 }, { id: 2 }, { id: 3 }], [[1, 2, 3]]);
 
         jest.advanceTimersByTime(5000);
         await testRenderUsers(container, { result: [1, 2, 3], error: NO_ERROR, isPending: false });
         expect(onError).not.toHaveBeenCalled();
+        expect(onCancel).not.toHaveBeenCalled();
         expect(onSuccess).toHaveBeenCalledTimes(1);
       });
 
       it('should notify with lazy error', async () => {
         const onError = jest.fn();
+        const onCancel = jest.fn();
         const onSuccess = jest.fn();
         const { container } = render(
-          <Users ids={[100, 99, 98]} onError={onError} onSuccess={onSuccess} />,
+          <Users ids={[100, 99, 98]} onError={onError} onSuccess={onSuccess} onCancel={onCancel} />,
         );
 
         jest.advanceTimersByTime(100);
         await testRenderUsers(container, { result: [], error: NO_ERROR, isPending: true });
         expect(onError).not.toHaveBeenCalled();
+        expect(onCancel).not.toHaveBeenCalled();
         expect(onSuccess).not.toHaveBeenCalled();
 
         jest.advanceTimersByTime(1000);
         await testRenderUsers(container, { result: [], error: BIG_NUMBER_ERROR, isPending: false });
         expect(onError).toHaveBeenCalledTimes(1);
         expect(onError).toHaveBeenCalledWith(BIG_NUMBER_ERROR, [[100, 99, 98]]);
+        expect(onCancel).not.toHaveBeenCalled();
         expect(onSuccess).not.toHaveBeenCalled();
 
         jest.advanceTimersByTime(5000);
         await testRenderUsers(container, { result: [], error: BIG_NUMBER_ERROR, isPending: false });
         expect(onError).toHaveBeenCalledTimes(1);
+        expect(onCancel).not.toHaveBeenCalled();
         expect(onSuccess).not.toHaveBeenCalled();
       });
 
       it('should cancel render with lazy success', async () => {
-        const { container } = render(<Users ids={[1, 2, 3]} />);
+        const onCancel = jest.fn();
+        const { container } = render(<Users ids={[1, 2, 3]} onCancel={onCancel} />);
 
         jest.advanceTimersByTime(100);
         await testRenderUsers(container, { result: [], error: NO_ERROR, isPending: true });
+        expect(onCancel).not.toHaveBeenCalled();
 
         fireEvent.click(container.querySelector('button.cancel'));
 
         jest.advanceTimersByTime(1000);
         await testRenderUsers(container, { result: [], error: NO_ERROR, isPending: false });
+        expect(onCancel).toHaveBeenCalledTimes(1);
+        expect(onCancel).toHaveBeenCalledWith([[1, 2, 3]]);
 
         jest.advanceTimersByTime(5000);
         await testRenderUsers(container, { result: [], error: NO_ERROR, isPending: false });
+        expect(onCancel).toHaveBeenCalledTimes(1);
       });
 
       it('should cancel render with lazy error', async () => {
-        const { container } = render(<Users ids={[100, 99, 98]} />);
+        const onCancel = jest.fn();
+        const { container } = render(<Users ids={[100, 99, 98]} onCancel={onCancel} />);
 
         jest.advanceTimersByTime(100);
         await testRenderUsers(container, { result: [], error: NO_ERROR, isPending: true });
+        expect(onCancel).not.toHaveBeenCalled();
 
         fireEvent.click(container.querySelector('button.cancel'));
 
         jest.advanceTimersByTime(1000);
         await testRenderUsers(container, { result: [], error: NO_ERROR, isPending: false });
+        expect(onCancel).toHaveBeenCalledTimes(1);
+        expect(onCancel).toHaveBeenCalledWith([[100, 99, 98]]);
 
         jest.advanceTimersByTime(5000);
         await testRenderUsers(container, { result: [], error: NO_ERROR, isPending: false });
+        expect(onCancel).toHaveBeenCalledTimes(1);
       });
 
       it('should rerender with lazy success when re-execute', async () => {
@@ -371,29 +391,43 @@ describe('useAsync.js', () => {
 
       it('should notify with success', async () => {
         const onError = jest.fn();
+        const onCancel = jest.fn();
         const onSuccess = jest.fn();
         const { container } = render(
-          <UsersNonPromise ids={[1, 2, 3]} onError={onError} onSuccess={onSuccess} />,
+          <UsersNonPromise
+            ids={[1, 2, 3]}
+            onError={onError}
+            onSuccess={onSuccess}
+            onCancel={onCancel}
+          />,
         );
 
         jest.advanceTimersByTime(0);
         await testRenderUsers(container, { result: [1, 2, 3], error: NO_ERROR, isPending: false });
         expect(onError).not.toHaveBeenCalled();
+        expect(onCancel).not.toHaveBeenCalled();
         expect(onSuccess).toHaveBeenCalledTimes(1);
         expect(onSuccess).toHaveBeenCalledWith([{ id: 1 }, { id: 2 }, { id: 3 }], [[1, 2, 3]]);
       });
 
       it('should notify with error', async () => {
         const onError = jest.fn();
+        const onCancel = jest.fn();
         const onSuccess = jest.fn();
         const { container } = render(
-          <UsersNonPromise ids={[100, 99, 98]} onError={onError} onSuccess={onSuccess} />,
+          <UsersNonPromise
+            ids={[100, 99, 98]}
+            onError={onError}
+            onSuccess={onSuccess}
+            onCancel={onCancel}
+          />,
         );
 
         jest.advanceTimersByTime(0);
         await testRenderUsers(container, { result: [], error: BIG_NUMBER_ERROR, isPending: false });
         expect(onError).toHaveBeenCalledTimes(1);
         expect(onError).toHaveBeenCalledWith(BIG_NUMBER_ERROR, [[100, 99, 98]]);
+        expect(onCancel).not.toHaveBeenCalled();
         expect(onSuccess).not.toHaveBeenCalled();
       });
     });
@@ -434,25 +468,97 @@ describe('useAsync.js', () => {
 
       it('should not notify with lazy success', async () => {
         const onError = jest.fn();
+        const onCancel = jest.fn();
         const onSuccess = jest.fn();
         const { container } = render(
-          <UsersOnDemand ids={[1, 2, 3]} onError={onError} onSuccess={onSuccess} />,
+          <UsersOnDemand
+            ids={[1, 2, 3]}
+            onError={onError}
+            onSuccess={onSuccess}
+            onCancel={onCancel}
+          />,
         );
 
         await testRenderUsersNoLoad(container);
         expect(onError).not.toHaveBeenCalled();
+        expect(onCancel).not.toHaveBeenCalled();
         expect(onSuccess).not.toHaveBeenCalled();
+      });
+
+      it('should notify with lazy success', async () => {
+        const onError = jest.fn();
+        const onCancel = jest.fn();
+        const onSuccess = jest.fn();
+        const { container } = render(
+          <UsersOnDemand
+            ids={[1, 2, 3]}
+            onError={onError}
+            onSuccess={onSuccess}
+            onCancel={onCancel}
+          />,
+        );
+
+        fireEvent.click(container.querySelector('button.execute'));
+
+        jest.advanceTimersByTime(100);
+        await testRenderUsers(container, { result: [], error: NO_ERROR, isPending: true });
+        expect(onError).not.toHaveBeenCalled();
+        expect(onCancel).not.toHaveBeenCalled();
+        expect(onSuccess).not.toHaveBeenCalled();
+
+        jest.advanceTimersByTime(1000);
+        await testRenderUsers(container, { result: [1, 2, 3], error: NO_ERROR, isPending: false });
+        expect(onError).not.toHaveBeenCalled();
+        expect(onCancel).not.toHaveBeenCalled();
+        expect(onSuccess).toHaveBeenCalledTimes(1);
+        expect(onSuccess).toHaveBeenCalledWith([{ id: 1 }, { id: 2 }, { id: 3 }], [[1, 2, 3]]);
       });
 
       it('should not notify with lazy error', async () => {
         const onError = jest.fn();
+        const onCancel = jest.fn();
         const onSuccess = jest.fn();
         const { container } = render(
-          <UsersOnDemand ids={[100, 99, 98]} onError={onError} onSuccess={onSuccess} />,
+          <UsersOnDemand
+            ids={[100, 99, 98]}
+            onError={onError}
+            onSuccess={onSuccess}
+            onCancel={onCancel}
+          />,
         );
 
         await testRenderUsersNoLoad(container);
         expect(onError).not.toHaveBeenCalled();
+        expect(onCancel).not.toHaveBeenCalled();
+        expect(onSuccess).not.toHaveBeenCalled();
+      });
+
+      it('should notify with lazy error', async () => {
+        const onError = jest.fn();
+        const onCancel = jest.fn();
+        const onSuccess = jest.fn();
+        const { container } = render(
+          <UsersOnDemand
+            ids={[100, 99, 98]}
+            onError={onError}
+            onSuccess={onSuccess}
+            onCancel={onCancel}
+          />,
+        );
+
+        fireEvent.click(container.querySelector('button.execute'));
+
+        jest.advanceTimersByTime(100);
+        await testRenderUsers(container, { result: [], error: NO_ERROR, isPending: true });
+        expect(onError).not.toHaveBeenCalled();
+        expect(onCancel).not.toHaveBeenCalled();
+        expect(onSuccess).not.toHaveBeenCalled();
+
+        jest.advanceTimersByTime(1000);
+        await testRenderUsers(container, { result: [], error: BIG_NUMBER_ERROR, isPending: false });
+        expect(onError).toHaveBeenCalledTimes(1);
+        expect(onError).toHaveBeenCalledWith(BIG_NUMBER_ERROR, [[100, 99, 98]]);
+        expect(onCancel).not.toHaveBeenCalled();
         expect(onSuccess).not.toHaveBeenCalled();
       });
 
@@ -489,39 +595,49 @@ describe('useAsync.js', () => {
       });
 
       it('should cancel render with lazy success', async () => {
-        const { container } = render(<UsersOnDemand ids={[1, 2, 3]} />);
+        const onCancel = jest.fn();
+        const { container } = render(<UsersOnDemand ids={[1, 2, 3]} onCancel={onCancel} />);
         await testRenderUsersNoLoad(container);
 
         fireEvent.click(container.querySelector('button.execute'));
 
         jest.advanceTimersByTime(100);
         await testRenderUsers(container, { result: [], error: NO_ERROR, isPending: true });
+        expect(onCancel).not.toHaveBeenCalled();
 
         fireEvent.click(container.querySelector('button.cancel'));
 
         jest.advanceTimersByTime(1000);
         await testRenderUsers(container, { result: [], error: NO_ERROR, isPending: false });
+        expect(onCancel).toHaveBeenCalledTimes(1);
+        expect(onCancel).toHaveBeenCalledWith([[1, 2, 3]]);
 
         jest.advanceTimersByTime(5000);
         await testRenderUsers(container, { result: [], error: NO_ERROR, isPending: false });
+        expect(onCancel).toHaveBeenCalledTimes(1);
       });
 
       it('should cancel render with lazy error', async () => {
-        const { container } = render(<UsersOnDemand ids={[100, 99, 98]} />);
+        const onCancel = jest.fn();
+        const { container } = render(<UsersOnDemand ids={[100, 99, 98]} onCancel={onCancel} />);
         await testRenderUsersNoLoad(container);
 
         fireEvent.click(container.querySelector('button.execute'));
 
         jest.advanceTimersByTime(100);
         await testRenderUsers(container, { result: [], error: NO_ERROR, isPending: true });
+        expect(onCancel).not.toHaveBeenCalled();
 
         fireEvent.click(container.querySelector('button.cancel'));
 
         jest.advanceTimersByTime(1000);
         await testRenderUsers(container, { result: [], error: NO_ERROR, isPending: false });
+        expect(onCancel).toHaveBeenCalledTimes(1);
+        expect(onCancel).toHaveBeenCalledWith([[100, 99, 98]]);
 
         jest.advanceTimersByTime(5000);
         await testRenderUsers(container, { result: [], error: NO_ERROR, isPending: false });
+        expect(onCancel).toHaveBeenCalledTimes(1);
       });
     });
 
@@ -559,25 +675,85 @@ describe('useAsync.js', () => {
 
       it('should not notify with success', async () => {
         const onError = jest.fn();
+        const onCancel = jest.fn();
         const onSuccess = jest.fn();
         const { container } = render(
-          <UsersOnDemandNonPromise ids={[1, 2, 3]} onError={onError} onSuccess={onSuccess} />,
+          <UsersOnDemandNonPromise
+            ids={[1, 2, 3]}
+            onError={onError}
+            onSuccess={onSuccess}
+            onCancel={onCancel}
+          />,
         );
 
         await testRenderUsersNoLoad(container);
         expect(onError).not.toHaveBeenCalled();
+        expect(onCancel).not.toHaveBeenCalled();
         expect(onSuccess).not.toHaveBeenCalled();
+      });
+
+      it('should notify with success', async () => {
+        const onError = jest.fn();
+        const onCancel = jest.fn();
+        const onSuccess = jest.fn();
+        const { container } = render(
+          <UsersOnDemandNonPromise
+            ids={[1, 2, 3]}
+            onError={onError}
+            onSuccess={onSuccess}
+            onCancel={onCancel}
+          />,
+        );
+
+        fireEvent.click(container.querySelector('button.execute'));
+
+        jest.advanceTimersByTime(0);
+        await testRenderUsers(container, { result: [1, 2, 3], error: NO_ERROR, isPending: false });
+        expect(onError).not.toHaveBeenCalled();
+        expect(onCancel).not.toHaveBeenCalled();
+        expect(onSuccess).toHaveBeenCalledTimes(1);
+        expect(onSuccess).toHaveBeenCalledWith([{ id: 1 }, { id: 2 }, { id: 3 }], [[1, 2, 3]]);
       });
 
       it('should not notify with error', async () => {
         const onError = jest.fn();
+        const onCancel = jest.fn();
         const onSuccess = jest.fn();
         const { container } = render(
-          <UsersOnDemandNonPromise ids={[100, 99, 98]} onError={onError} onSuccess={onSuccess} />,
+          <UsersOnDemandNonPromise
+            ids={[100, 99, 98]}
+            onError={onError}
+            onSuccess={onSuccess}
+            onCancel={onCancel}
+          />,
         );
 
         await testRenderUsersNoLoad(container);
         expect(onError).not.toHaveBeenCalled();
+        expect(onCancel).not.toHaveBeenCalled();
+        expect(onSuccess).not.toHaveBeenCalled();
+      });
+
+      it('should notify with error', async () => {
+        const onError = jest.fn();
+        const onCancel = jest.fn();
+        const onSuccess = jest.fn();
+        const { container } = render(
+          <UsersOnDemandNonPromise
+            ids={[100, 99, 98]}
+            onError={onError}
+            onSuccess={onSuccess}
+            onCancel={onCancel}
+          />,
+        );
+
+        fireEvent.click(container.querySelector('button.execute'));
+
+        jest.advanceTimersByTime(0);
+        await testRenderUsers(container, { result: [], error: BIG_NUMBER_ERROR, isPending: false });
+        expect(onError).toHaveBeenCalledTimes(1);
+        expect(onError).toHaveBeenCalledWith(BIG_NUMBER_ERROR, [[100, 99, 98]]);
+        expect(onCancel).not.toHaveBeenCalled();
         expect(onSuccess).not.toHaveBeenCalled();
       });
 

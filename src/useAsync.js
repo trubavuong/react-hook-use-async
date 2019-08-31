@@ -34,14 +34,24 @@ function executeTask(createTask, inputs) {
   return { cancel, promise: proxyPromise };
 }
 
-function useAsyncInternal(createTask, inputs, { onError, onSuccess, isOnDemand }) {
+function useAsyncInternal(createTask, inputs, {
+  onError,
+  onCancel,
+  onSuccess,
+  isOnDemand,
+}) {
   const staticConfig = useRef({ isOnDemand }).current;
 
   const selfRef = useRef({ task: { cancel: noop } });
   const self = selfRef.current;
   useEffect(
     () => {
-      Object.assign(self, { onError, onSuccess, createTask });
+      Object.assign(self, {
+        onError,
+        onCancel,
+        onSuccess,
+        createTask,
+      });
     },
   );
 
@@ -60,6 +70,7 @@ function useAsyncInternal(createTask, inputs, { onError, onSuccess, isOnDemand }
       const {
         createTask: createTaskSelf,
         onError: onErrorSelf = noop,
+        onCancel: onCancelSelf = noop,
         onSuccess: onSuccessSelf = noop,
       } = self;
 
@@ -74,6 +85,7 @@ function useAsyncInternal(createTask, inputs, { onError, onSuccess, isOnDemand }
         error => {
           if (error === ABORT_ERROR) {
             setState(prevState => ({ ...prevState, isPending: false }));
+            onCancelSelf(inputs);
           }
           else {
             setState({ error, isPending: false });

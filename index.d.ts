@@ -9,6 +9,7 @@ interface AsyncResult<Result> {
 
 interface Config<Result, Inputs> {
   onError?: (error: Error, inputs: Inputs) => void,
+  onCancel?: (inputs: Inputs) => void,
   onSuccess?: (result: Result, inputs: Inputs) => void,
 }
 
