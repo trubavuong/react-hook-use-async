@@ -226,7 +226,6 @@ Signature is same as [useAsync](#useasync).
 Let me show you two common use cases:
 
 -   `Data fetching` - Data should be fetched on the component gets mounted and inputs change, such as apply filters using form. You also want to put a `Fetch` button to let you fetch data on-demand whenever you want. In this case, you must use `useAsync()` hook.
-
 -   `Click-to-action-button` - You don't want any automatic mechanism. You want to click a button to do something, such as follow a person, or you want to refetch data after you delete a data item. In this case, you must use `useAsyncOnDemand()` hook.
 
 ### Why I got infinite re-fetch loop when using useAsync() hook?
