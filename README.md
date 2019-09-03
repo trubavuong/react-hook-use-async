@@ -139,7 +139,7 @@ function fetchUserById([id]) {
   const url = `http://example.com/fetch-user?id=${id}`;
   const controller = (typeof AbortController !== 'undefined' ? new AbortController() : null);
   const config = { signal: controller && controller.signal };
-  const promise = fetch(url).then(response => response.json());
+  const promise = fetch(url, config).then(response => response.json());
   const cancel = () => controller && controller.abort();
   return new Task(promise, cancel);
 }
@@ -162,7 +162,7 @@ function fetchArticles([query]) {
   let timeoutId = null;
   const promise = new Promise((resolve, reject) => {
     timeoutId = setTimeout(() => {
-      fetch(url).then(response => response.json()).then(resolve).catch(reject);
+      fetch(url, config).then(response => response.json()).then(resolve).catch(reject);
     }, 300);
   });
   const cancel = () => {
