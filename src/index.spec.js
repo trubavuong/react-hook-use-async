@@ -1,6 +1,5 @@
-import useAsync, { useAsyncOnDemand } from './useAsync';
-import IndexUseAsync, { useAsyncOnDemand as IndexUseAsyncOnDemand } from './index';
-
+import useAsync, { useAsyncOnDemand, Task } from './useAsync';
+import IndexUseAsync, { useAsyncOnDemand as IndexUseAsyncOnDemand, Task as IndexTask } from './index';
 
 describe('index.js', () => {
   describe('useAsync()', () => {
@@ -12,6 +11,12 @@ describe('index.js', () => {
   describe('useAsyncOnDemand()', () => {
     it('should be exported correctly', () => {
       expect(useAsyncOnDemand).toEqual(IndexUseAsyncOnDemand);
+    });
+  });
+
+  describe('Task', () => {
+    it('should be exported correctly', () => {
+      expect(Task).toEqual(IndexTask);
     });
   });
 });

@@ -9,7 +9,7 @@ import {
 
 import '@testing-library/jest-dom/extend-expect';
 
-import useAsync, { useAsyncOnDemand } from './useAsync';
+import useAsync, { Task, useAsyncOnDemand } from './useAsync';
 
 const NO_ERROR = { message: '' };
 const BIG_NUMBER_ERROR = new Error('BigNumber');
@@ -21,6 +21,8 @@ function UsersInternal({
   onSuccess,
   useAsyncFn,
   returnAsPromise,
+  returnAsTask,
+  cancelTask,
 }) {
   const {
     result,
@@ -31,7 +33,7 @@ function UsersInternal({
   } = useAsyncFn(
     ([runtimeIds = []]) => {
       if (returnAsPromise) {
-        return new Promise((resolve, reject) => {
+        const promise = new Promise((resolve, reject) => {
           setTimeout(
             () => {
               if (runtimeIds.length === 0 || runtimeIds[0] < 10) {
@@ -45,11 +47,12 @@ function UsersInternal({
             1000,
           );
         });
+        return returnAsTask ? new Task(promise, cancelTask) : promise;
       }
 
       if (runtimeIds.length === 0 || runtimeIds[0] < 10) {
         const users = runtimeIds.map(id => ({ id }));
-        return users;
+        return returnAsTask ? new Task(users, cancelTask) : users;
       }
 
       throw BIG_NUMBER_ERROR;
@@ -270,6 +273,38 @@ describe('useAsync.js', () => {
         expect(onCancel).toHaveBeenCalledTimes(1);
       });
 
+      it('should cancel render with lazy success return as task', async () => {
+        const onCancel = jest.fn();
+        const cancelTask = jest.fn();
+        const { container } = render(
+          <Users
+            ids={[1, 2, 3]}
+            onCancel={onCancel}
+            returnAsTask
+            cancelTask={cancelTask}
+          />,
+        );
+
+        jest.advanceTimersByTime(100);
+        await testRenderUsers(container, { result: [], error: NO_ERROR, isPending: true });
+        expect(onCancel).not.toHaveBeenCalled();
+        expect(cancelTask).not.toHaveBeenCalled();
+
+        fireEvent.click(container.querySelector('button.cancel'));
+
+        jest.advanceTimersByTime(0);
+        await testRenderUsers(container, { result: [], error: NO_ERROR, isPending: false });
+        expect(onCancel).toHaveBeenCalledTimes(1);
+        expect(onCancel).toHaveBeenCalledWith([[1, 2, 3]]);
+        expect(cancelTask).toHaveBeenCalledTimes(1);
+        expect(cancelTask).toHaveBeenCalledWith();
+
+        jest.advanceTimersByTime(5000);
+        await testRenderUsers(container, { result: [], error: NO_ERROR, isPending: false });
+        expect(onCancel).toHaveBeenCalledTimes(1);
+        expect(cancelTask).toHaveBeenCalledTimes(1);
+      });
+
       it('should cancel render with lazy error', async () => {
         const onCancel = jest.fn();
         const { container } = render(<Users ids={[100, 99, 98]} onCancel={onCancel} />);
@@ -288,6 +323,38 @@ describe('useAsync.js', () => {
         jest.advanceTimersByTime(5000);
         await testRenderUsers(container, { result: [], error: NO_ERROR, isPending: false });
         expect(onCancel).toHaveBeenCalledTimes(1);
+      });
+
+      it('should cancel render with lazy error return as task', async () => {
+        const onCancel = jest.fn();
+        const cancelTask = jest.fn();
+        const { container } = render(
+          <Users
+            ids={[100, 99, 98]}
+            onCancel={onCancel}
+            returnAsTask
+            cancelTask={cancelTask}
+          />,
+        );
+
+        jest.advanceTimersByTime(100);
+        await testRenderUsers(container, { result: [], error: NO_ERROR, isPending: true });
+        expect(onCancel).not.toHaveBeenCalled();
+        expect(cancelTask).not.toHaveBeenCalled();
+
+        fireEvent.click(container.querySelector('button.cancel'));
+
+        jest.advanceTimersByTime(0);
+        await testRenderUsers(container, { result: [], error: NO_ERROR, isPending: false });
+        expect(onCancel).toHaveBeenCalledTimes(1);
+        expect(onCancel).toHaveBeenCalledWith([[100, 99, 98]]);
+        expect(cancelTask).toHaveBeenCalledTimes(1);
+        expect(cancelTask).toHaveBeenCalledWith();
+
+        jest.advanceTimersByTime(5000);
+        await testRenderUsers(container, { result: [], error: NO_ERROR, isPending: false });
+        expect(onCancel).toHaveBeenCalledTimes(1);
+        expect(cancelTask).toHaveBeenCalledTimes(1);
       });
 
       it('should rerender with lazy success when re-execute', async () => {
@@ -617,6 +684,41 @@ describe('useAsync.js', () => {
         expect(onCancel).toHaveBeenCalledTimes(1);
       });
 
+      it('should cancel render with lazy success return as task', async () => {
+        const onCancel = jest.fn();
+        const cancelTask = jest.fn();
+        const { container } = render(
+          <UsersOnDemand
+            ids={[1, 2, 3]}
+            onCancel={onCancel}
+            returnAsTask
+            cancelTask={cancelTask}
+          />,
+        );
+        await testRenderUsersNoLoad(container);
+
+        fireEvent.click(container.querySelector('button.execute'));
+
+        jest.advanceTimersByTime(100);
+        await testRenderUsers(container, { result: [], error: NO_ERROR, isPending: true });
+        expect(onCancel).not.toHaveBeenCalled();
+        expect(cancelTask).not.toHaveBeenCalled();
+
+        fireEvent.click(container.querySelector('button.cancel'));
+
+        jest.advanceTimersByTime(0);
+        await testRenderUsers(container, { result: [], error: NO_ERROR, isPending: false });
+        expect(onCancel).toHaveBeenCalledTimes(1);
+        expect(onCancel).toHaveBeenCalledWith([[1, 2, 3]]);
+        expect(cancelTask).toHaveBeenCalledTimes(1);
+        expect(cancelTask).toHaveBeenCalledWith();
+
+        jest.advanceTimersByTime(5000);
+        await testRenderUsers(container, { result: [], error: NO_ERROR, isPending: false });
+        expect(onCancel).toHaveBeenCalledTimes(1);
+        expect(cancelTask).toHaveBeenCalledTimes(1);
+      });
+
       it('should cancel render with lazy error', async () => {
         const onCancel = jest.fn();
         const { container } = render(<UsersOnDemand ids={[100, 99, 98]} onCancel={onCancel} />);
@@ -638,6 +740,41 @@ describe('useAsync.js', () => {
         jest.advanceTimersByTime(5000);
         await testRenderUsers(container, { result: [], error: NO_ERROR, isPending: false });
         expect(onCancel).toHaveBeenCalledTimes(1);
+      });
+
+      it('should cancel render with lazy error return as task', async () => {
+        const onCancel = jest.fn();
+        const cancelTask = jest.fn();
+        const { container } = render(
+          <UsersOnDemand
+            ids={[100, 99, 98]}
+            onCancel={onCancel}
+            returnAsTask
+            cancelTask={cancelTask}
+          />,
+        );
+        await testRenderUsersNoLoad(container);
+
+        fireEvent.click(container.querySelector('button.execute'));
+
+        jest.advanceTimersByTime(100);
+        await testRenderUsers(container, { result: [], error: NO_ERROR, isPending: true });
+        expect(onCancel).not.toHaveBeenCalled();
+        expect(cancelTask).not.toHaveBeenCalled();
+
+        fireEvent.click(container.querySelector('button.cancel'));
+
+        jest.advanceTimersByTime(0);
+        await testRenderUsers(container, { result: [], error: NO_ERROR, isPending: false });
+        expect(onCancel).toHaveBeenCalledTimes(1);
+        expect(onCancel).toHaveBeenCalledWith([[100, 99, 98]]);
+        expect(cancelTask).toHaveBeenCalledTimes(1);
+        expect(cancelTask).toHaveBeenCalledWith();
+
+        jest.advanceTimersByTime(5000);
+        await testRenderUsers(container, { result: [], error: NO_ERROR, isPending: false });
+        expect(onCancel).toHaveBeenCalledTimes(1);
+        expect(cancelTask).toHaveBeenCalledTimes(1);
       });
     });
 

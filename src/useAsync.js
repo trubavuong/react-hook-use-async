@@ -3,6 +3,11 @@ import { useRef, useState, useEffect } from 'react';
 const noop = () => { };
 const ABORT_ERROR = {};
 
+function Task(promise, cancel = noop) {
+  this.promise = (promise instanceof Promise ? promise : Promise.resolve(promise));
+  this.cancel = cancel;
+}
+
 function executeTask(createTask, inputs) {
   const cleanups = [];
   const cancel = () => {
@@ -24,12 +29,16 @@ function executeTask(createTask, inputs) {
       cleanups.push(() => reject(ABORT_ERROR));
 
       const injection = { abortSignal: abortController && abortController.signal };
-      const task = createTask(inputs, injection);
-      const taskPromise = (task instanceof Promise ? task : Promise.resolve(task));
-      taskPromise.then(
+      let task = createTask(inputs, injection);
+      if (!(task instanceof Task)) {
+        task = new Task(task);
+      }
+      task.promise.then(
         result => (!isCanceled && resolve(result)),
         error => (!isCanceled && reject(error)),
       );
+
+      cleanups.push(() => task.cancel());
     }
     catch (error) {
       reject(error);
@@ -120,4 +129,4 @@ function useAsyncOnDemand(createTask, inputs = [], config = {}) {
 }
 
 export default useAsync;
-export { useAsyncOnDemand };
+export { Task, useAsyncOnDemand };

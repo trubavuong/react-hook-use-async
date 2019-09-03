@@ -1,1 +1,1 @@
-export { default, useAsyncOnDemand } from './useAsync';
+export { default, useAsyncOnDemand, Task } from './useAsync';
