@@ -19,9 +19,9 @@ interface Config<Result, Inputs> {
 }
 
 declare class Task<Result> {
+  public promise: Promise<Result>;
+  public cancel: VoidCallback;
   constructor(promise: Promise<Result> | Result, cancel?: VoidCallback);
-  promise: Promise<Result>;
-  cancel: VoidCallback;
 }
 
 declare const useAsync: <Result, Inputs extends any[]>(
