@@ -388,26 +388,6 @@ describe('useAsync.js', () => {
         jest.advanceTimersByTime(5000);
         await testRenderUsers(container, { result: [], error: BIG_NUMBER_ERROR, isPending: false });
       });
-
-      it('should cover AbortController section', async () => {
-        const { AbortController } = global;
-        delete global.AbortController;
-
-        const { container } = render(<Users ids={[1, 2, 3]} />);
-
-        jest.advanceTimersByTime(100);
-        await testRenderUsers(container, { result: [], error: NO_ERROR, isPending: true });
-
-        fireEvent.click(container.querySelector('button.cancel'));
-
-        jest.advanceTimersByTime(1000);
-        await testRenderUsers(container, { result: [], error: NO_ERROR, isPending: false });
-
-        jest.advanceTimersByTime(5000);
-        await testRenderUsers(container, { result: [], error: NO_ERROR, isPending: false });
-
-        global.AbortController = AbortController;
-      });
     });
 
     describe('with non-promise', () => {

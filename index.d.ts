@@ -17,24 +17,20 @@ interface Config<Result, Inputs> {
   onSuccess?: (result: Result, inputs: Inputs) => void;
 }
 
-interface Injection {
-  abortSignal?: AbortController['signal'];
-}
-
 declare class Task<Result> {
-  constructor (promise: Promise<Result> | Result, cancel?: VoidCallback);
+  constructor(promise: Promise<Result> | Result, cancel?: VoidCallback);
   promise: Promise<Result>;
   cancel: VoidCallback;
 }
 
 declare const useAsync: <Result, Inputs extends any[]>(
-  createTask: (inputs: Inputs, injection: Injection) => Promise<Result> | Task<Result> | Result,
+  createTask: (inputs: Inputs) => Promise<Result> | Task<Result> | Result,
   inputs?: Inputs,
   config?: Config<Result, Inputs>,
 ) => AsyncResult<Result>;
 
 declare const useAsyncOnDemand: <Result, Inputs extends any[]>(
-  createTask: (inputs: Inputs, injection: Injection) => Promise<Result> | Task<Result> | Result,
+  createTask: (inputs: Inputs) => Promise<Result> | Task<Result> | Result,
   inputs?: Inputs,
   config?: Config<Result, Inputs>,
 ) => AsyncResult<Result>;

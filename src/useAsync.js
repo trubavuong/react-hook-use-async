@@ -19,17 +19,9 @@ function executeTask(createTask, inputs) {
     isCanceled = true;
   });
 
-  const abortController = (typeof AbortController !== 'undefined' ? new AbortController() : null);
-  if (abortController) {
-    cleanups.push(() => abortController.abort());
-  }
-
   const promise = new Promise((resolve, reject) => {
     try {
-      cleanups.push(() => reject(ABORT_ERROR));
-
-      const injection = { abortSignal: abortController && abortController.signal };
-      let task = createTask(inputs, injection);
+      let task = createTask(inputs);
       if (!(task instanceof Task)) {
         task = new Task(task);
       }
@@ -39,6 +31,7 @@ function executeTask(createTask, inputs) {
       );
 
       cleanups.push(() => task.cancel());
+      cleanups.push(() => reject(ABORT_ERROR));
     }
     catch (error) {
       reject(error);
