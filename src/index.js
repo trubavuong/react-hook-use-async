@@ -88,18 +88,24 @@ function useAsync(
       const task = executeTask(createTaskSelf, inputs);
       setState(prevState => ({ ...prevState, isPending: true }));
 
+      const setStateCurrentTask = args => {
+        if (self.task === task) {
+          setState(args);
+        }
+      };
+
       task.promise.then(
         result => {
-          setState({ result, isPending: false });
+          setStateCurrentTask({ result, isPending: false });
           onSuccessSelf(result, inputs);
         },
         error => {
           if (error === ABORT_ERROR) {
-            setState(prevState => ({ ...prevState, isPending: false }));
+            setStateCurrentTask(prevState => ({ ...prevState, isPending: false }));
             onCancelSelf(inputs);
           }
           else {
-            setState({ error, isPending: false });
+            setStateCurrentTask({ error, isPending: false });
             onErrorSelf(error, inputs);
           }
         },

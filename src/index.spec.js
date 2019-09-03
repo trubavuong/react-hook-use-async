@@ -191,6 +191,19 @@ describe('useAsync.js', () => {
         });
       });
 
+      it('should render with lazy success then error (fast)', async () => {
+        const { container, rerender } = render(<Users ids={[1, 2, 3]} />);
+
+        jest.advanceTimersByTime(100);
+        await testRenderUsers(container, { result: [], error: NO_ERROR, isPending: true });
+
+        rerender(<Users ids={[100, 99, 98]} />);
+        await testRenderUsersLoad(container, {
+          from: { result: [], error: NO_ERROR },
+          to: { result: [], error: BIG_NUMBER_ERROR },
+        });
+      });
+
       it('should render with lazy error then success', async () => {
         const { container, rerender } = render(<Users ids={[100, 99, 98]} />);
         await testRenderUsersLoad(container, {
@@ -201,6 +214,19 @@ describe('useAsync.js', () => {
         rerender(<Users ids={[1, 2, 3]} />);
         await testRenderUsersLoad(container, {
           from: { result: [], error: BIG_NUMBER_ERROR },
+          to: { result: [1, 2, 3], error: NO_ERROR },
+        });
+      });
+
+      it('should render with lazy error then success (fast)', async () => {
+        const { container, rerender } = render(<Users ids={[100, 99, 98]} />);
+
+        jest.advanceTimersByTime(100);
+        await testRenderUsers(container, { result: [], error: NO_ERROR, isPending: true });
+
+        rerender(<Users ids={[1, 2, 3]} />);
+        await testRenderUsersLoad(container, {
+          from: { result: [], error: NO_ERROR },
           to: { result: [1, 2, 3], error: NO_ERROR },
         });
       });
