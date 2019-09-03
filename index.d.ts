@@ -12,6 +12,7 @@ interface AsyncResult<Result> {
 }
 
 interface Config<Result, Inputs> {
+  isOnDemand?: boolean,
   onError?: (error: Error, inputs: Inputs) => void;
   onCancel?: (inputs: Inputs) => void;
   onSuccess?: (result: Result, inputs: Inputs) => void;
@@ -29,11 +30,5 @@ declare const useAsync: <Result, Inputs extends any[]>(
   config?: Config<Result, Inputs>,
 ) => AsyncResult<Result>;
 
-declare const useAsyncOnDemand: <Result, Inputs extends any[]>(
-  createTask: (inputs: Inputs) => Promise<Result> | Task<Result> | Result,
-  inputs?: Inputs,
-  config?: Config<Result, Inputs>,
-) => AsyncResult<Result>;
-
 export default useAsync;
-export { Task, useAsyncOnDemand };
+export { Task };

@@ -41,12 +41,16 @@ function executeTask(createTask, inputs) {
   return { cancel, promise };
 }
 
-function useAsyncInternal(createTask, inputs, {
-  onError,
-  onCancel,
-  onSuccess,
-  isOnDemand,
-}) {
+function useAsync(
+  createTask,
+  inputs = [],
+  {
+    onError,
+    onCancel,
+    onSuccess,
+    isOnDemand = false,
+  } = {},
+) {
   const staticConfig = useRef({ isOnDemand }).current;
 
   const selfRef = useRef({ task: { cancel: noop } });
@@ -113,13 +117,5 @@ function useAsyncInternal(createTask, inputs, {
   return { execute, ...state, ...self.task };
 }
 
-function useAsync(createTask, inputs = [], config = {}) {
-  return useAsyncInternal(createTask, inputs, { ...config, isOnDemand: false });
-}
-
-function useAsyncOnDemand(createTask, inputs = [], config = {}) {
-  return useAsyncInternal(createTask, inputs, { ...config, isOnDemand: true });
-}
-
 export default useAsync;
-export { Task, useAsyncOnDemand };
+export { Task };

@@ -9,7 +9,7 @@ import {
 
 import '@testing-library/jest-dom/extend-expect';
 
-import useAsync, { Task, useAsyncOnDemand } from './useAsync';
+import useAsync, { Task } from './useAsync';
 
 const NO_ERROR = { message: '' };
 const BIG_NUMBER_ERROR = new Error('BigNumber');
@@ -19,7 +19,7 @@ function UsersInternal({
   onError,
   onCancel,
   onSuccess,
-  useAsyncFn,
+  isOnDemand,
   returnAsPromise,
   returnAsTask,
   cancelTask,
@@ -30,7 +30,7 @@ function UsersInternal({
     isPending,
     cancel,
     execute,
-  } = useAsyncFn(
+  } = useAsync(
     ([runtimeIds = []]) => {
       if (returnAsPromise) {
         const promise = new Promise((resolve, reject) => {
@@ -58,8 +58,16 @@ function UsersInternal({
       throw BIG_NUMBER_ERROR;
     },
     (ids ? [ids] : undefined),
-
-    ((onError || onCancel || onSuccess) ? { onError, onCancel, onSuccess } : undefined),
+    (
+      (onError || onCancel || onSuccess || typeof isOnDemand !== 'undefined')
+        ? {
+          onError,
+          onCancel,
+          onSuccess,
+          isOnDemand,
+        }
+        : undefined
+    ),
   );
 
   return (
@@ -79,22 +87,22 @@ function UsersInternal({
 
 function Users(props) {
   // eslint-disable-next-line react/jsx-props-no-spreading
-  return <UsersInternal {...props} useAsyncFn={useAsync} returnAsPromise />;
+  return <UsersInternal {...props} returnAsPromise />;
 }
 
 function UsersOnDemand(props) {
   // eslint-disable-next-line react/jsx-props-no-spreading
-  return <UsersInternal {...props} useAsyncFn={useAsyncOnDemand} returnAsPromise />;
+  return <UsersInternal {...props} isOnDemand returnAsPromise />;
 }
 
 function UsersNonPromise(props) {
   // eslint-disable-next-line react/jsx-props-no-spreading
-  return <UsersInternal {...props} useAsyncFn={useAsync} returnAsPromise={false} />;
+  return <UsersInternal {...props} returnAsPromise={false} />;
 }
 
 function UsersOnDemandNonPromise(props) {
   // eslint-disable-next-line react/jsx-props-no-spreading
-  return <UsersInternal {...props} useAsyncFn={useAsyncOnDemand} returnAsPromise={false} />;
+  return <UsersInternal {...props} isOnDemand returnAsPromise={false} />;
 }
 
 describe('useAsync.js', () => {
@@ -480,7 +488,7 @@ describe('useAsync.js', () => {
     });
   });
 
-  describe('useAsyncOnDemand()', () => {
+  describe('useAsync() on-demand', () => {
     describe('with promise', () => {
       it('should render nothing with default inputs', async () => {
         const { container } = render(<UsersOnDemand />);
